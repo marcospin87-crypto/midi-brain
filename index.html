@@ -86,12 +86,14 @@
       touch-action: manipulation;
     }
 
-    body {
+    html, body {
       background-color: var(--bg-main);
       color: var(--text-main);
       overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -99,7 +101,7 @@
     .app-card { background-color: var(--bg-card); border-color: var(--border-color); }
     .app-btn { background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--text-main); }
     .app-btn:hover { border-color: var(--accent-color); }
-    .app-btn-accent { background-color: var(--accent-color); color: #000; font-weight: 800; }
+    .app-btn-accent { background-color: var(--accent-color); color: #000 !important; font-weight: 800; }
     .app-border { border-color: var(--border-color); }
 
     .glow-accent {
@@ -124,8 +126,7 @@
 <body class="flex flex-col h-screen w-screen overflow-hidden select-none">
 
   <!-- TOP HEADER / TRANSPORT BAR -->
-  <header class="app-panel border-b px-3 py-1.5 flex items-center justify-between shrink-0 h-12">
-    <!-- Brand & Tempo -->
+  <header class="app-panel border-b px-3 py-1.5 flex items-center justify-between shrink-0 h-12 z-20">
     <div class="flex items-center gap-2">
       <div class="flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed"></span>
@@ -155,7 +156,7 @@
       </button>
     </div>
 
-    <!-- Live Performance: KeyStep Quick Routing -->
+    <!-- KeyStep Route -->
     <div class="flex items-center gap-1 app-card border px-2 py-0.5 rounded">
       <span class="text-[10px] text-zinc-400 font-bold">KEYSTEP ROUTE:</span>
       <select id="selKeystepRoute" class="app-btn text-xs font-bold rounded px-1.5 py-0.5 outline-none border text-amber-400">
@@ -193,11 +194,11 @@
   </header>
 
   <!-- MAIN VIEWPORT CONTAINER -->
-  <main class="flex-1 relative overflow-hidden flex flex-col p-2">
+  <main class="flex-1 relative overflow-hidden flex flex-col p-2 min-h-0">
 
     <!-- 1. VIEW: 16-TRACK MIXER MATRIX -->
-    <section id="viewMixer" class="view-panel h-full flex flex-col">
-      <div class="flex justify-between items-center mb-1.5">
+    <section id="viewMixer" class="view-panel h-full w-full flex flex-col">
+      <div class="flex justify-between items-center mb-1.5 shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs font-black tracking-wider uppercase text-zinc-400">16 Canali Hardware Routing</span>
           <span class="text-[10px] app-btn border px-2 py-0.5 rounded">Tocca EDIT per aprire il Piano Roll</span>
@@ -208,26 +209,22 @@
           <button id="btnClearSolo" class="touch-btn px-2 py-0.5 app-btn border rounded">CLEAR SOLO</button>
         </div>
       </div>
-      <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 h-[calc(100%-2rem)]"></div>
+      <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
     </section>
 
-    <!-- 2. VIEW: DAW PIANO ROLL POTENZIATO CON SIDEBAR TRACCE & ZOOM STEP -->
-    <section id="viewEditor" class="view-panel h-full flex flex-col hidden">
-      <!-- Editor Toolbar Superiore -->
+    <!-- 2. VIEW: DAW PIANO ROLL -->
+    <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
       <div class="app-panel border rounded-t px-2 py-1.5 flex items-center justify-between shrink-0 gap-2">
         <div class="flex items-center gap-2 flex-wrap">
-          <!-- Active Pattern Badge -->
           <div class="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border app-border">
             <span class="text-[10px] font-bold text-zinc-400">PAT:</span>
             <span id="lblEditorPatName" class="text-xs font-black text-amber-400">A</span>
           </div>
 
-          <!-- SOLO Toggle inside Editor -->
           <button id="btnEdSoloToggle" class="touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1">
             🎧 <span id="lblEdSolo">SOLO</span>
           </button>
 
-          <!-- Type Selector: Synth vs Drum Matrix -->
           <div class="flex items-center gap-1">
             <span class="text-[10px] font-bold text-zinc-400">MODO:</span>
             <select id="edTrackTypeSelect" class="app-btn border text-xs font-bold rounded px-1.5 py-0.5 outline-none">
@@ -238,14 +235,12 @@
 
           <div class="h-5 w-px app-border"></div>
 
-          <!-- Tools: Draw, Select, Eraser -->
           <div class="flex app-card p-0.5 rounded border gap-1">
             <button id="toolDraw" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold app-btn-accent">✎ DRAW</button>
             <button id="toolSelect" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⬚ SELECT AREA</button>
             <button id="toolEraser" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⌫ ERASE</button>
           </div>
 
-          <!-- Grid Resolution -->
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>SNAP:</span>
             <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono">
@@ -256,7 +251,6 @@
             </select>
           </div>
 
-          <!-- Zoom In Step / Battute -->
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>ZOOM VIEW:</span>
             <select id="selZoomBars" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-amber-400 font-bold">
@@ -268,7 +262,6 @@
           </div>
         </div>
 
-        <!-- History & Utilities -->
         <div class="flex items-center gap-1.5">
           <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black hidden">
             ELIMINA SELEZIONE
@@ -277,21 +270,13 @@
         </div>
       </div>
 
-      <!-- Main Editor Body: 16-Track Sidebar + Piano Roll Canvas -->
-      <div class="flex-1 flex overflow-hidden border border-t-0 app-border">
-        
-        <!-- Track Rail a Sinistra (16 Canali selezionabili con 1 click) -->
-        <div id="edTrackRail" class="w-48 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1">
-          <!-- Popolato via JS con tutti i 16 canali -->
-        </div>
-
-        <!-- Canvas Piano Roll Container -->
-        <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95">
+      <div class="flex-1 flex overflow-hidden border border-t-0 app-border min-h-0">
+        <div id="edTrackRail" class="w-48 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
+        <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95 min-h-0">
           <canvas id="dawCanvas" class="w-full h-full block"></canvas>
         </div>
       </div>
 
-      <!-- Editor Bottom Status -->
       <div class="app-panel border-x border-b px-3 py-1 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
         <div class="flex items-center gap-3">
           <span><b>DRAW:</b> tocca per inserire, trascina a destra per allungare con snap</span>
@@ -307,7 +292,7 @@
     </section>
 
     <!-- 3. VIEW: PATTERN CHAINER & SONG MODE -->
-    <section id="viewChainer" class="view-panel h-full flex flex-col gap-2.5 hidden">
+    <section id="viewChainer" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
       <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-2">
@@ -325,7 +310,6 @@
         </div>
       </div>
 
-      <!-- Main Slot Song Container (Heavy Visual Weight) -->
       <div class="app-card border rounded p-3 h-44 shrink-0 flex flex-col justify-between shadow-xl">
         <div class="flex justify-between items-center text-xs font-bold text-zinc-400 mb-1">
           <div class="flex items-center gap-2">
@@ -334,23 +318,20 @@
           </div>
           <div>TOTALE SLOT: <b id="lblChainLength" class="text-amber-400 font-mono text-sm">0</b></div>
         </div>
-
-        <div id="chainSlotsContainer" class="flex-1 flex items-center gap-3 overflow-x-auto py-1"></div>
+        <div id="chainSlotsContainer" class="flex-1 flex items-center gap-3 overflow-x-auto py-1 min-h-0"></div>
       </div>
 
-      <!-- 16-Track Matrix Analyzer -->
-      <div class="flex-1 app-card border rounded p-2.5 flex flex-col overflow-hidden">
-        <div class="flex justify-between items-center mb-1.5">
+      <div class="flex-1 app-card border rounded p-2.5 flex flex-col overflow-hidden min-h-0">
+        <div class="flex justify-between items-center mb-1.5 shrink-0">
           <span class="text-xs font-black tracking-wider uppercase text-zinc-300">LIVE MULTI-TRACK PLAYHEAD MONITOR</span>
           <span class="text-[10px] text-zinc-400 font-mono">Realtime Track Activity</span>
         </div>
-        <div id="chainMonitorLanes" class="flex-1 grid grid-cols-2 gap-x-4 gap-y-1.5 overflow-hidden"></div>
+        <div id="chainMonitorLanes" class="flex-1 grid grid-cols-2 gap-x-4 gap-y-1.5 overflow-hidden min-h-0"></div>
       </div>
     </section>
 
-    <!-- 4. VIEW: PATTERNS & TIMELINE DAW (GESTIONE NOME, COLORE, DURATA E TIMELINE) -->
-    <section id="viewScenes" class="view-panel h-full flex flex-col gap-2.5 hidden">
-      <!-- Toolbar Creazione Pattern -->
+    <!-- 4. VIEW: PATTERNS & TIMELINE DAW -->
+    <section id="viewScenes" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
       <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-3">
           <h2 class="text-xs font-black tracking-wider text-amber-400 uppercase">Pattern Manager & Timeline Song DAW</h2>
@@ -367,14 +348,12 @@
               <option value="128">128 (8 Battute)</option>
             </select>
           </div>
-
           <button id="btnCreatePattern" class="touch-btn px-3 py-1 rounded app-btn-accent text-xs">
             + NUOVO PATTERN
           </button>
         </div>
       </div>
 
-      <!-- Deck Pattern con Configurazione Nome e Colore -->
       <div class="app-card border rounded p-2.5 shrink-0">
         <div class="flex justify-between items-center text-[11px] font-bold text-zinc-400 mb-2">
           <span>PATTERNS REGISTRATI (Tocca EDIT PIANO per comporre le 16 tracce hardware, oppure imposta durata x1, x2, x4):</span>
@@ -382,9 +361,8 @@
         <div id="patternsDeck" class="flex items-center gap-3 overflow-x-auto pb-1"></div>
       </div>
 
-      <!-- DAW TIMELINE: Blocchi rettangolari proporzionali alla durata scelta -->
-      <div class="flex-1 app-card border rounded p-3 flex flex-col overflow-hidden">
-        <div class="flex justify-between items-center mb-2">
+      <div class="flex-1 app-card border rounded p-3 flex flex-col overflow-hidden min-h-0">
+        <div class="flex justify-between items-center mb-2 shrink-0">
           <div class="flex items-center gap-2">
             <span class="text-xs font-black tracking-wider text-zinc-200 uppercase">ARRANGIAMENTO TIMELINE GLOBALE DELLA SONG</span>
             <span class="text-[10px] text-zinc-400">(Trascina orizzontalmente per scorrere la song)</span>
@@ -393,8 +371,7 @@
             <span class="text-zinc-400">STEP TOTALI: <b id="lblTotalSongSteps" class="text-amber-400">0</b></span>
           </div>
         </div>
-
-        <div id="dawTimelineTrack" class="flex-1 app-panel border rounded p-2.5 flex items-center gap-2.5 overflow-x-auto relative"></div>
+        <div id="dawTimelineTrack" class="flex-1 app-panel border rounded p-2.5 flex items-center gap-2.5 overflow-x-auto relative min-h-0"></div>
       </div>
     </section>
 
@@ -419,7 +396,6 @@
         </div>
       </div>
 
-      <!-- PERSONALIZZATORE COLORI CUSTOM -->
       <div class="app-card border rounded p-2.5">
         <div class="flex justify-between items-center mb-1.5">
           <span class="text-xs font-black text-amber-400 uppercase">Personalizza Colori Tema:</span>
@@ -455,7 +431,6 @@
         </div>
       </div>
 
-      <!-- Porte MIDI Hardware -->
       <div>
         <label class="text-[11px] font-black text-zinc-400 uppercase block mb-1">Porte MIDI Hardware Rilevate:</label>
         <div class="grid grid-cols-2 gap-2">
@@ -482,10 +457,9 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-3 right-3 app-panel border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
 
-  <!-- APPLICAZIONE JAVASCRIPT INTEGRALE -->
+  <!-- SCRIPT DELL'APPLICAZIONE -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -527,7 +501,7 @@
       songMode: false,
       quantizeBar: true,
       internalAudioEnabled: true,
-      zoomBars: 64, // visualizza 64 step di base
+      zoomBars: 64,
       chain: [
         { pat: 0, loops: 2 },
         { pat: 1, loops: 2 }
@@ -558,7 +532,6 @@
     project.patterns.push(createNewPatternObject(2, "C - Breakdown", 32, "#22c55e"));
     project.patterns.push(createNewPatternObject(3, "D - Outro Final", 64, "#ec4899"));
 
-    // Demo note
     for (let s = 0; s < 64; s += 4) project.patterns[0].tracks[0].notes.push({ step: s, note: 36, len: 2, vel: 110 });
     for (let s = 4; s < 64; s += 8) project.patterns[0].tracks[1].notes.push({ step: s, note: 38, len: 2, vel: 100 });
     const leadNotes = [60, 63, 65, 67, 70, 67, 65, 63];
@@ -579,49 +552,51 @@
 
     function playInternalSound(type, note, vel, durationSec) {
       if (!project.internalAudioEnabled) return;
-      const ctx = getAudioContext();
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime((vel / 127) * 0.4, ctx.currentTime);
+      try {
+        const ctx = getAudioContext();
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime((vel / 127) * 0.4, ctx.currentTime);
 
-      if (type === 'drum') {
-        if (note === 36) {
-          const osc = ctx.createOscillator();
-          osc.frequency.setValueAtTime(140, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.8, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
-          return;
+        if (type === 'drum') {
+          if (note === 36) {
+            const osc = ctx.createOscillator();
+            osc.frequency.setValueAtTime(140, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.8, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+            return;
+          }
+          if (note === 38) {
+            const osc = ctx.createOscillator();
+            osc.frequency.setValueAtTime(180, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.16);
+            return;
+          }
         }
-        if (note === 38) {
-          const osc = ctx.createOscillator();
-          osc.frequency.setValueAtTime(180, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.16);
-          return;
-        }
-      }
 
-      const osc = ctx.createOscillator();
-      const filter = ctx.createBiquadFilter();
-      osc.type = 'sawtooth';
-      const freq = 440 * Math.pow(2, (note - 69) / 12);
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(2200, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + Math.max(0.1, durationSec));
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + Math.max(0.1, durationSec) + 0.05);
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        const freq = 440 * Math.pow(2, (note - 69) / 12);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2200, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + Math.max(0.1, durationSec));
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + Math.max(0.1, durationSec) + 0.05);
+      } catch (err) {}
     }
 
     function sendMidiNoteOn(channel, note, velocity) {
@@ -654,6 +629,7 @@
       if (!midiAccess) return;
       const selOut = document.getElementById('selMidiOut');
       const selIn = document.getElementById('selMidiIn');
+      if (!selOut || !selIn) return;
       selOut.innerHTML = '<option value="">Nessuna porta / Audio Interno</option>';
       selIn.innerHTML = '<option value="">Nessun controller</option>';
 
@@ -761,6 +737,7 @@
     // Mixer Render
     function renderTracksGrid() {
       const container = document.getElementById('tracksGrid');
+      if (!container) return;
       container.innerHTML = '';
       const pat = project.patterns[project.activePattern];
       if (!pat) return;
@@ -768,7 +745,7 @@
       pat.tracks.forEach((trk, idx) => {
         const card = document.createElement('div');
         const isSelected = project.selectedTrackIndex === idx;
-        card.className = `app-card border ${isSelected ? 'border-amber-400' : ''} rounded p-2 flex flex-col justify-between relative`;
+        card.className = `app-card border ${isSelected ? 'border-amber-400' : ''} rounded p-2 flex flex-col justify-between relative shadow-sm min-h-[75px]`;
 
         let grpBadgeColor = 'text-zinc-500';
         if (trk.group === 'G1') grpBadgeColor = 'text-amber-400';
@@ -835,13 +812,11 @@
       updateEditorSoloState();
     }
 
-    // ==========================================
-    // PIANO ROLL POTENZIATO: SIDEBAR 16 TRACCE, ZOOM STEP, DRUM VS INST, SELEZIONE AREA
-    // ==========================================
+    // Canvas Engine
     const canvas = document.getElementById('dawCanvas');
     const ctx = canvas.getContext('2d');
     let currentTool = 'draw';
-    let octaveOffset = 48; // per Synth
+    let octaveOffset = 48;
     let isDraggingKeys = false;
     let dragStartY = 0;
 
@@ -850,9 +825,9 @@
     let marqueeBox = null;
     let selectedNotes = [];
 
-    // Render Side Rail dei 16 Canali
     function renderEditorTrackRail() {
       const rail = document.getElementById('edTrackRail');
+      if (!rail) return;
       rail.innerHTML = '';
       const pat = project.patterns[project.activePattern];
       if (!pat) return;
@@ -860,7 +835,7 @@
       pat.tracks.forEach((t, i) => {
         const isSel = project.selectedTrackIndex === i;
         const btn = document.createElement('button');
-        btn.className = `touch-btn w-full p-2 rounded text-left border flex flex-col justify-between ${
+        btn.className = `touch-btn w-full p-2 rounded text-left border flex flex-col justify-between shrink-0 ${
           isSel ? 'app-btn-accent glow-accent' : 'app-card app-border hover:border-zinc-500'
         }`;
 
@@ -888,7 +863,7 @@
     }
 
     function resizeCanvas() {
-      if (!canvas.parentElement) return;
+      if (!canvas || !canvas.parentElement) return;
       const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width || window.innerWidth;
       canvas.height = rect.height || (window.innerHeight - 120);
@@ -906,7 +881,7 @@
     }
 
     function drawPianoRoll() {
-      if (activeView !== 'editor') return;
+      if (activeView !== 'editor' || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const pat = project.patterns[project.activePattern];
@@ -919,14 +894,11 @@
       const isDrum = trk.type === 'drum';
 
       const keyWidth = isDrum ? 85 : 55;
-      const visibleSteps = project.zoomBars; // Zoom quantizzato (16, 32, 64, 128)
+      const visibleSteps = project.zoomBars;
       const gridWidth = canvas.width - keyWidth;
       const stepWidth = gridWidth / visibleSteps;
 
       if (isDrum) {
-        // ==========================================
-        // GRAFICA DRUM MATRIX COMPOSER (16 PADS FISSI)
-        // ==========================================
         const numPads = 16;
         const rowHeight = Math.max(22, Math.floor(canvas.height / numPads));
 
@@ -935,7 +907,6 @@
           const y = p * rowHeight;
           const padName = DRUM_MAP_NAMES[padNote] || `Pad ${p + 1}`;
 
-          // Riquadro Pad a sinistra
           ctx.fillStyle = (p % 2 === 0) ? '#1f2430' : '#141722';
           ctx.fillRect(0, y, keyWidth, rowHeight);
           ctx.strokeStyle = '#2d3345';
@@ -945,14 +916,12 @@
           ctx.font = '10px sans-serif font-black';
           ctx.fillText(padName, 6, y + (rowHeight / 2) + 4);
 
-          // Griglia Row
           ctx.fillStyle = (p % 2 === 0) ? 'rgba(18, 20, 30, 0.95)' : 'rgba(12, 14, 22, 0.95)';
           ctx.fillRect(keyWidth, y, gridWidth, rowHeight);
           ctx.strokeStyle = '#1e2436';
           ctx.strokeRect(keyWidth, y, gridWidth, rowHeight);
         }
 
-        // Griglia Step Verticale
         for (let s = 0; s <= visibleSteps; s++) {
           const x = keyWidth + s * stepWidth;
           if (x > canvas.width) break;
@@ -964,7 +933,6 @@
           ctx.stroke();
         }
 
-        // Note / Trigger Drum
         trk.notes.forEach(n => {
           const padIdx = n.note - 36;
           if (padIdx >= 0 && padIdx < numPads && n.step < visibleSteps) {
@@ -985,9 +953,6 @@
         });
 
       } else {
-        // ==========================================
-        // GRAFICA PIANO ROLL MELODICO CHROMATIC (SYNTH)
-        // ==========================================
         const rowHeight = 20;
         const numRows = Math.floor(canvas.height / rowHeight);
 
@@ -1001,7 +966,6 @@
           ctx.strokeStyle = '#22283a';
           ctx.strokeRect(keyWidth, y, gridWidth, rowHeight);
 
-          // Tasto Piano
           ctx.fillStyle = isBlackKey ? '#171a24' : '#e2e8f0';
           ctx.fillRect(0, y, keyWidth, rowHeight);
           ctx.strokeStyle = '#2d3345';
@@ -1013,7 +977,6 @@
           ctx.fillText(noteNames[noteNumber % 12] + Math.floor(noteNumber / 12), 6, y + 14);
         }
 
-        // Griglia Step Verticale
         for (let s = 0; s <= visibleSteps; s++) {
           const x = keyWidth + s * stepWidth;
           if (x > canvas.width) break;
@@ -1025,7 +988,6 @@
           ctx.stroke();
         }
 
-        // Note Melodiche
         trk.notes.forEach(n => {
           const rowIndex = numRows - 1 - (n.note - octaveOffset);
           if (rowIndex >= 0 && rowIndex < numRows && n.step < visibleSteps) {
@@ -1047,7 +1009,6 @@
         });
       }
 
-      // Playhead Sequencer
       if (project.isPlaying) {
         const stepInZoom = currentStep % visibleSteps;
         const playX = keyWidth + stepInZoom * stepWidth;
@@ -1059,7 +1020,6 @@
         ctx.stroke();
       }
 
-      // Riquadro di Selezione Marquee (Tool SELECT)
       if (isSelectingMarquee && marqueeBox) {
         const x = Math.min(marqueeBox.startX, marqueeBox.currentX);
         const y = Math.min(marqueeBox.startY, marqueeBox.currentY);
@@ -1078,7 +1038,6 @@
       document.getElementById('lblNoteCount').textContent = trk.notes.length;
     }
 
-    // Pointer Events Piano Roll: Disegno Note, Snap e Box Selezione
     canvas.addEventListener('pointerdown', e => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1150,7 +1109,6 @@
         return;
       }
 
-      // Drag allungamento nota melodica a scatti (Snap)
       if (currentTool === 'draw' && activeDrawingNote) {
         const pat = project.patterns[project.activePattern];
         const trk = pat.tracks[project.selectedTrackIndex];
@@ -1170,7 +1128,6 @@
         return;
       }
 
-      // Box Marquee di Selezione
       if (currentTool === 'select' && isSelectingMarquee && marqueeBox) {
         marqueeBox.currentX = x;
         marqueeBox.currentY = y;
@@ -1276,11 +1233,10 @@
       }
     }
 
-    // ==========================================
-    // SONG CHAIN ENGINE & REALTIME SLOTS
-    // ==========================================
+    // Chainer Engine
     function renderChainSlots() {
       const container = document.getElementById('chainSlotsContainer');
+      if (!container) return;
       container.innerHTML = '';
       document.getElementById('lblChainLength').textContent = project.chain.length;
 
@@ -1359,6 +1315,7 @@
     function renderPatAddButtons() {
       const container = document.getElementById('patAddButtonsContainer');
       const resetBtn = document.getElementById('btnClearChain');
+      if (!container || !resetBtn) return;
       container.querySelectorAll('.pat-add-btn').forEach(e => e.remove());
 
       project.patterns.forEach((p, idx) => {
@@ -1377,6 +1334,7 @@
 
     function renderChainerMonitorLanes() {
       const container = document.getElementById('chainMonitorLanes');
+      if (!container) return;
       container.innerHTML = '';
       const pat = project.patterns[project.activePattern];
       if (!pat) return;
@@ -1407,11 +1365,10 @@
       }
     }
 
-    // ==========================================
-    // PATTERNS DECK & TIMELINE GLOBALE DELLA SONG
-    // ==========================================
+    // Patterns Deck & Timeline
     function renderPatternsDeck() {
       const deck = document.getElementById('patternsDeck');
+      if (!deck) return;
       deck.innerHTML = '';
 
       project.patterns.forEach((pat, idx) => {
@@ -1486,6 +1443,7 @@
 
     function renderDawTimeline() {
       const container = document.getElementById('dawTimelineTrack');
+      if (!container) return;
       container.innerHTML = '';
 
       let totalSongSteps = 0;
@@ -1575,9 +1533,7 @@
       showToast(`Creato ${newName} con durata ${steps} step`);
     };
 
-    // ==========================================
-    // THEME ENGINE
-    // ==========================================
+    // Temi
     function applyCustomThemeValues(t) {
       document.body.className = "flex flex-col h-screen w-screen overflow-hidden select-none";
       const root = document.documentElement;
@@ -1612,7 +1568,7 @@
       showToast("Tema Personalizzato Applicato");
     };
 
-    // Viste
+    // Navigazione
     let activeView = 'mixer';
     function switchView(viewName) {
       activeView = viewName;
@@ -1631,7 +1587,7 @@
         document.getElementById('edTrackTypeSelect').value = project.patterns[project.activePattern].tracks[project.selectedTrackIndex].type;
         autoCenterPianoRoll();
         updateEditorSoloState();
-        setTimeout(resizeCanvas, 40);
+        setTimeout(resizeCanvas, 30);
       }
       if (viewName === 'chainer') {
         renderChainSlots();
@@ -1666,7 +1622,7 @@
       setTimeout(() => t.classList.add('opacity-0'), 2200);
     }
 
-    // Eventi Generali
+    // Event Listeners
     document.getElementById('tabMixer').onclick = () => switchView('mixer');
     document.getElementById('tabEditor').onclick = () => switchView('editor');
     document.getElementById('tabChainer').onclick = () => switchView('chainer');
@@ -1737,15 +1693,22 @@
       updateEditorSoloState();
     };
 
-    window.addEventListener('load', () => {
+    function bootApp() {
       initWebMIDI();
       renderTracksGrid();
       renderChainSlots();
       renderPatAddButtons();
       renderPatternsDeck();
       renderDawTimeline();
-      resizeCanvas();
-    });
+      switchView('mixer');
+      setTimeout(resizeCanvas, 50);
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', bootApp);
+    } else {
+      bootApp();
+    }
   </script>
 </body>
 </html>
