@@ -359,7 +359,9 @@
 
   <div id="toast" class="fixed bottom-3 right-3 bg-zinc-900 border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
 
-if ('serviceWorker' in navigator) {
+  <!-- JAVASCRIPT REGOLARMENTE RACCHIUSO NEL TAG SCRIPT -->
+  <script>
+    if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
       });
