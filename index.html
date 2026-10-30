@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Master Mind MIDI Brain - Live Sequencer</title>
   
-  <!-- Web App Manifest Inline per Tablet / PWA -->
-  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22Master%20Mind%20MIDI%20Brain%20Pro%22%2C%22short_name%22%3A%22MIDIBrain%22%2C%22id%22%3A%22midi-brain-sequencer-app%22%2C%22start_url%22%3A%22.%2Findex.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230c0d12%22%2C%22theme_color%22%3A%22%230c0d12%22%7D">
-  
-  <!-- Tailwind CSS CDN -->
+  <link rel="manifest" href="./manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   
   <style>
@@ -173,27 +170,22 @@
         </div>
       </div>
 
-      <!-- 4x4 Grid Matrix for 16 Tracks -->
       <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 h-[calc(100%-2rem)]"></div>
     </section>
 
     <!-- 2. VIEW: DAW PIANO ROLL -->
     <section id="viewEditor" class="view-panel h-full flex flex-col hidden">
-      <!-- Editor Top Toolbar -->
       <div class="panel-bg border border-theme rounded-t px-2 py-1 flex items-center justify-between shrink-0 gap-2">
         <div class="flex items-center gap-2">
-          <!-- Active Track Selector -->
           <div class="flex items-center gap-1">
             <span class="text-[10px] font-bold text-zinc-400">TRACCIA:</span>
             <select id="edTrackSelect" class="bg-zinc-800 border border-zinc-700 text-amber-400 text-xs font-bold rounded px-1.5 py-0.5 outline-none"></select>
           </div>
 
-          <!-- SOLO Toggle inside Editor -->
           <button id="btnEdSoloToggle" class="touch-btn px-2.5 py-0.5 rounded text-xs font-black border border-zinc-700 bg-zinc-800 text-zinc-300 flex items-center gap-1">
             🎧 <span id="lblEdSolo">SOLO</span>
           </button>
 
-          <!-- Type Selector: Synth vs Drum Matrix -->
           <div class="flex items-center gap-1">
             <select id="edTrackTypeSelect" class="bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-bold rounded px-1.5 py-0.5 outline-none">
               <option value="synth">SYNTH / MELODIC</option>
@@ -203,14 +195,12 @@
 
           <div class="h-5 w-px bg-zinc-700"></div>
 
-          <!-- Tools: Draw, Select, Eraser -->
           <div class="flex bg-zinc-900 p-0.5 rounded border border-zinc-700 gap-1">
             <button id="toolDraw" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold bg-amber-500 text-black">✎ DRAW</button>
             <button id="toolSelect" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⬚ SELECT</button>
             <button id="toolEraser" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⌫ ERASE</button>
           </div>
 
-          <!-- Grid Resolution -->
           <div class="flex items-center gap-1 text-[10px] font-bold text-zinc-400">
             <span>GRID:</span>
             <select id="selGridRes" class="bg-zinc-800 text-zinc-200 border border-zinc-700 rounded px-1 py-0.5 outline-none">
@@ -222,7 +212,6 @@
           </div>
         </div>
 
-        <!-- History & Utilities -->
         <div class="flex items-center gap-1.5">
           <button id="btnEdUndo" class="touch-btn px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs text-zinc-300">↶ UNDO</button>
           <button id="btnEdRedo" class="touch-btn px-2 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-xs text-zinc-300">↷ REDO</button>
@@ -230,17 +219,15 @@
         </div>
       </div>
 
-      <!-- Canvas Piano Roll Container -->
       <div id="pianoRollWrapper" class="flex-1 relative w-full border border-t-0 border-theme bg-zinc-950 overflow-hidden">
         <canvas id="dawCanvas" class="w-full h-full block"></canvas>
       </div>
 
-      <!-- Editor Bottom Status -->
       <div class="panel-bg border-x border-b border-theme px-3 py-1 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
         <div class="flex items-center gap-3">
           <span>Trascina la tastiera per scorrere le ottave</span>
           <span>•</span>
-          <span>Tocca la griglia per inserire/rimuovere note</span>
+          <span>Con SELECT trascina per riquadro multiplo</span>
         </div>
         <div class="flex items-center gap-2">
           <span>NOTE: <b id="lblNoteCount" class="text-amber-400 font-mono">0</b></span>
@@ -260,7 +247,7 @@
               MODO: <span id="lblSongMode" class="text-zinc-400">PATTERN LOOP</span>
             </button>
           </div>
-          <span class="text-[10px] text-zinc-400">Organizza sequenze complesse incatenando i pattern con moltiplicatori.</span>
+          <span class="text-[10px] text-zinc-400">Organizza sequenze live incatenando i pattern con moltiplicatori.</span>
         </div>
 
         <div class="flex items-center gap-1">
@@ -277,7 +264,6 @@
         </div>
       </div>
 
-      <!-- Chain Interactive Timeline Strip -->
       <div class="card-bg border border-theme rounded p-2 h-28 shrink-0 flex flex-col justify-between">
         <div class="flex justify-between items-center text-[10px] text-zinc-400 mb-1">
           <span>SLOT SONG (Tocca per modificare loop x1, x2, x4, x8 o spostare):</span>
@@ -286,7 +272,6 @@
         <div id="chainSlotsContainer" class="flex-1 flex items-center gap-2 overflow-x-auto pb-1"></div>
       </div>
 
-      <!-- 16-Track Matrix Analyzer -->
       <div class="flex-1 card-bg border border-theme rounded p-2 flex flex-col overflow-hidden">
         <div class="flex justify-between items-center mb-1">
           <span class="text-xs font-bold text-zinc-300 uppercase tracking-wider">PANORAMICA GLOBALE 16 TRACCE (LIVE MONITOR)</span>
@@ -308,7 +293,6 @@
         </button>
       </div>
 
-      <!-- Scene List Grid -->
       <div id="scenesGrid" class="flex-1 grid grid-cols-3 gap-2 overflow-y-auto pr-1"></div>
     </section>
 
@@ -322,7 +306,6 @@
         <button id="btnCloseSettings" class="touch-btn text-zinc-400 hover:text-white text-base">✕</button>
       </div>
 
-      <!-- Temi Visivi -->
       <div>
         <label class="text-[11px] font-bold text-zinc-400 uppercase block mb-1">Tema Live Display:</label>
         <div class="grid grid-cols-5 gap-1.5">
@@ -334,7 +317,6 @@
         </div>
       </div>
 
-      <!-- Porte MIDI Hardware -->
       <div>
         <label class="text-[11px] font-bold text-zinc-400 uppercase block mb-1">Porte MIDI Hardware Rilevate:</label>
         <div class="grid grid-cols-2 gap-2">
@@ -353,7 +335,6 @@
         </div>
       </div>
 
-      <!-- Sync & Clock -->
       <div>
         <label class="text-[11px] font-bold text-zinc-400 uppercase block mb-1">Sincronizzazione Clock & Sync:</label>
         <div class="flex items-center gap-4 text-xs text-zinc-300">
@@ -376,11 +357,15 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-3 right-3 bg-zinc-900 border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
 
-  <!-- JAVASCRIPT APP ENGINE (ESECUZIONE DIRETTA GARANTITA) -->
   <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
     const HARDWARE_DEFAULTS = [
       { name: "KO-II Kick", ch: 1, type: "drum", note: 36, grp: "G1" },
       { name: "KO-II Snare", ch: 2, type: "drum", note: 38, grp: "G1" },
@@ -419,7 +404,6 @@
       patterns: []
     };
 
-    // Inizializza 8 Pattern a 64 Step
     for (let p = 0; p < 8; p++) {
       let patTracks = [];
       for (let t = 0; t < 16; t++) {
@@ -437,7 +421,6 @@
       project.patterns.push({ id: p, name: String.fromCharCode(65 + p), steps: 64, tracks: patTracks });
     }
 
-    // Groove demo su Pattern A
     for (let s = 0; s < 64; s += 4) {
       project.patterns[0].tracks[0].notes.push({ step: s, note: 36, len: 2, vel: 110 });
     }
@@ -477,7 +460,7 @@
       gain.gain.setValueAtTime((vel / 127) * 0.4, ctx.currentTime);
 
       if (type === 'drum') {
-        if (note === 36) { // Kick
+        if (note === 36) {
           const osc = ctx.createOscillator();
           osc.frequency.setValueAtTime(140, ctx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
@@ -489,7 +472,7 @@
           osc.stop(ctx.currentTime + 0.3);
           return;
         }
-        if (note === 38) { // Snare
+        if (note === 38) {
           const osc = ctx.createOscillator();
           osc.frequency.setValueAtTime(180, ctx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1);
@@ -502,7 +485,6 @@
         }
       }
 
-      // Melodic Synth
       const osc = ctx.createOscillator();
       const filter = ctx.createBiquadFilter();
       osc.type = 'sawtooth';
@@ -735,6 +717,8 @@
     let zoomX = 1.0;
     let isDraggingKeys = false;
     let dragStartY = 0;
+    let marqueeBox = null;
+    let selectedNotes = [];
 
     function resizeCanvas() {
       if (!canvas.parentElement) return;
@@ -802,10 +786,11 @@
           const x = keyWidth + n.step * stepWidth;
           const y = rowIndex * rowHeight;
           const w = Math.max(stepWidth * n.len - 2, 4);
+          const isSel = selectedNotes.includes(n);
 
-          ctx.fillStyle = isDrum ? '#f97316' : '#f59e0b';
+          ctx.fillStyle = isSel ? '#38bdf8' : (isDrum ? '#f97316' : '#f59e0b');
           ctx.fillRect(x + 1, y + 1, w, rowHeight - 2);
-          ctx.strokeStyle = '#d97706';
+          ctx.strokeStyle = isSel ? '#ffffff' : '#d97706';
           ctx.strokeRect(x + 1, y + 1, w, rowHeight - 2);
 
           ctx.fillStyle = '#000000';
@@ -822,6 +807,18 @@
         ctx.moveTo(playX, 0);
         ctx.lineTo(playX, canvas.height);
         ctx.stroke();
+      }
+
+      if (marqueeBox) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        const x = Math.min(marqueeBox.startX, marqueeBox.currentX);
+        const y = Math.min(marqueeBox.startY, marqueeBox.currentY);
+        const w = Math.abs(marqueeBox.currentX - marqueeBox.startX);
+        const h = Math.abs(marqueeBox.currentY - marqueeBox.startY);
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeRect(x, y, w, h);
       }
     }
 
@@ -860,23 +857,59 @@
       } else if (currentTool === 'eraser') {
         trk.notes = trk.notes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
         drawPianoRoll();
+      } else if (currentTool === 'select') {
+        marqueeBox = { startX: x, startY: y, currentX: x, currentY: y };
       }
     });
 
     canvas.addEventListener('pointermove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+
       if (isDraggingKeys) {
-        const rect = canvas.getBoundingClientRect();
-        const y = e.clientY - rect.top;
         const delta = Math.floor((dragStartY - y) / 12);
         if (delta !== 0) {
           octaveOffset = Math.max(12, Math.min(96, octaveOffset + delta));
           dragStartY = y;
           drawPianoRoll();
         }
+        return;
+      }
+
+      if (marqueeBox) {
+        marqueeBox.currentX = e.clientX - rect.left;
+        marqueeBox.currentY = y;
+        drawPianoRoll();
       }
     });
 
-    window.addEventListener('pointerup', () => { isDraggingKeys = false; });
+    window.addEventListener('pointerup', () => {
+      isDraggingKeys = false;
+      if (marqueeBox) {
+        const rowHeight = 18;
+        const numRows = Math.floor(canvas.height / rowHeight);
+        const keyWidth = 55;
+        const stepWidth = ((canvas.width - keyWidth) / 64) * zoomX;
+
+        const x1 = Math.min(marqueeBox.startX, marqueeBox.currentX);
+        const x2 = Math.max(marqueeBox.startX, marqueeBox.currentX);
+        const y1 = Math.min(marqueeBox.startY, marqueeBox.currentY);
+        const y2 = Math.max(marqueeBox.startY, marqueeBox.currentY);
+
+        const minStep = Math.floor((x1 - keyWidth) / stepWidth);
+        const maxStep = Math.floor((x2 - keyWidth) / stepWidth);
+        const minRow = Math.floor(y1 / rowHeight);
+        const maxRow = Math.floor(y2 / rowHeight);
+
+        const maxNote = octaveOffset + (numRows - 1 - minRow);
+        const minNote = octaveOffset + (numRows - 1 - maxRow);
+
+        const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
+        selectedNotes = trk.notes.filter(n => n.step >= minStep && n.step <= maxStep && n.note >= minNote && n.note <= maxNote);
+        marqueeBox = null;
+        drawPianoRoll();
+      }
+    });
 
     function autoCenterPianoRoll() {
       const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
@@ -1080,7 +1113,6 @@
       setTimeout(() => t.classList.add('opacity-0'), 2000);
     }
 
-    // Navigazione
     document.getElementById('tabMixer').onclick = () => switchView('mixer');
     document.getElementById('tabEditor').onclick = () => switchView('editor');
     document.getElementById('tabChainer').onclick = () => switchView('chainer');
@@ -1170,7 +1202,6 @@
       updateEditorSoloState();
     };
 
-    // Avvio iniziale
     window.addEventListener('load', () => {
       initWebMIDI();
       renderTracksGrid();
