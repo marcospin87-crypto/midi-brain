@@ -129,8 +129,9 @@
   <header class="app-panel border-b px-2 py-1 flex items-center justify-between shrink-0 h-12 z-20 overflow-x-auto gap-2">
     <div class="flex items-center gap-2 shrink-0">
       <div class="flex items-center gap-1.5">
-        <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed"></span>
+        <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed" title="Tempo Clock"></span>
         <span class="font-black text-sm tracking-widest text-amber-500">BRAIN HW</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700 transition-colors duration-75" id="midiActivityLed" title="Attività MIDI OUT"></span>
         <span class="text-[10px] app-btn px-1.5 py-0.5 rounded font-mono border">16-TRK</span>
       </div>
 
@@ -166,10 +167,10 @@
       </div>
     </div>
 
-    <!-- Right Controls: Audio, Panic & Settings SEMPRE VISIBILI -->
+    <!-- Right Controls: Audio MUTO di default, Panic & Settings -->
     <div class="flex items-center gap-1.5 shrink-0">
       <button id="btnToggleAudio" class="touch-btn px-2 py-1 rounded text-[10px] font-bold border app-btn">
-        AUDIO: <span id="lblAudioStatus" class="text-emerald-400">ON</span>
+        AUDIO: <span id="lblAudioStatus" class="text-zinc-500 font-bold">OFF (MIDI ONLY)</span>
       </button>
 
       <button id="btnPanic" title="All Notes Off" class="touch-btn px-2 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-[10px]">
@@ -190,7 +191,7 @@
       <div class="flex justify-between items-center mb-1.5 shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs font-black tracking-wider uppercase text-zinc-400">16 Canali Hardware Mixer</span>
-          <span class="text-[10px] app-btn border px-2 py-0.5 rounded">Tocca EDIT per comporre nel Piano Roll</span>
+          <span class="text-[10px] app-btn border px-2 py-0.5 rounded">Tocca EDIT per aprire il Piano Roll</span>
         </div>
         <div class="flex items-center gap-2 text-[10px]">
           <span class="text-zinc-500 font-bold">GRUPPI MUTE/SOLO:</span>
@@ -201,7 +202,7 @@
       <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
     </section>
 
-    <!-- 2. VIEW: DAW PIANO ROLL (SELETTORE MIDI CH, NOME TRACCIA & TOOL SELECT MULTIPLO) -->
+    <!-- 2. VIEW: DAW PIANO ROLL (MIDI CH, NOME TRACCIA & TOOL SELECT MULTIPLO) -->
     <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
       <div class="app-panel border rounded-t px-2 py-1.5 flex items-center justify-between shrink-0 gap-2 overflow-x-auto">
         <div class="flex items-center gap-2 flex-wrap">
@@ -214,14 +215,14 @@
           <!-- Rinomina Traccia Live -->
           <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
             <span class="text-[10px] font-bold text-zinc-400">TRACCIA:</span>
-            <input type="text" id="edTrackNameInput" class="w-28 bg-transparent text-xs font-black text-amber-400 outline-none truncate" value="MicroFreak">
+            <input type="text" id="edTrackNameInput" class="w-28 bg-transparent text-xs font-black text-amber-400 outline-none truncate" value="Korg NTS-1">
           </div>
 
           <!-- Assegnazione Canale MIDI Live (1-16) -->
           <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
             <span class="text-[10px] font-bold text-zinc-400">MIDI CH:</span>
             <select id="edTrackMidiChSelect" class="app-btn border text-xs font-mono font-bold text-amber-400 rounded px-1 py-0.5 outline-none">
-              <!-- Da 1 a 16 -->
+              <!-- Generato da 1 a 16 -->
             </select>
           </div>
 
@@ -247,7 +248,7 @@
           <!-- Grid Snap & Zoom -->
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>SNAP:</span>
-            <select id="selGridRes" class="app-btn border rounded px-1 py-0.5 outline-none font-mono">
+            <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono">
               <option value="32">1/32</option>
               <option value="16" selected>1/16</option>
               <option value="8">1/8</option>
@@ -257,7 +258,7 @@
 
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>ZOOM:</span>
-            <select id="selZoomBars" class="app-btn border rounded px-1 py-0.5 outline-none font-mono text-amber-400 font-bold">
+            <select id="selZoomBars" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-amber-400 font-bold">
               <option value="16">1 Bar (16 st)</option>
               <option value="32">2 Bars (32 st)</option>
               <option value="64" selected>4 Bars (64 st)</option>
@@ -396,10 +397,16 @@
 
       <!-- Configurazione MIDI USB & Porte -->
       <div class="app-card border rounded p-2.5">
-        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Connessioni MIDI USB / Hardware:</span>
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-black text-amber-400 uppercase">Connessioni MIDI USB Hardware:</span>
+          <button id="btnTestNts1" class="touch-btn px-2.5 py-1 rounded bg-amber-500 text-black text-[11px] font-black">
+            ⚡ TEST INVIO NOTE NTS-1
+          </button>
+        </div>
+        
         <div class="grid grid-cols-2 gap-2 text-[11px]">
           <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT (Output Verso NTS-1 / Synth):</span>
+            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT (Verso NTS-1 / Synth):</span>
             <select id="selMidiOut" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
               <option value="ALL">BROADCAST TUTTE LE PORTE USB</option>
             </select>
@@ -412,15 +419,15 @@
           </div>
         </div>
 
-        <div class="mt-2 text-[10px] text-zinc-400 flex items-center gap-2">
-          <span>Stato USB: <b id="lblUsbMidiStatus" class="text-emerald-400">In ascolto</b></span>
-          <button id="btnRescanMidi" class="touch-btn px-2 py-0.5 app-btn border rounded text-amber-400 font-bold">↻ Aggiorna Porte</button>
+        <div class="mt-2 text-[10px] text-zinc-400 flex items-center justify-between">
+          <span>Stato Web MIDI: <b id="lblUsbMidiStatus" class="text-emerald-400 font-bold">In ascolto</b></span>
+          <button id="btnRescanMidi" class="touch-btn px-2 py-0.5 app-btn border rounded text-amber-400 font-bold">↻ Aggiorna Rilevamento</button>
         </div>
       </div>
 
       <!-- Filtri & Regole MIDI -->
       <div class="app-card border rounded p-2.5">
-        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Filtri & Trasmissione Dati MIDI:</span>
+        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Trasmissione Dati MIDI Hardware:</span>
         <div class="grid grid-cols-2 gap-2 text-xs text-zinc-300">
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" id="chkSendNotes" checked class="rounded accent-amber-500">
@@ -501,10 +508,10 @@
       bpm: 126,
       isPlaying: false,
       activePattern: 0,
-      selectedTrackIndex: 4, // Inizia su Korg NTS-1
+      selectedTrackIndex: 4, // Seleziona Korg NTS-1 all'avvio
       songMode: false,
       quantizeBar: true,
-      internalAudioEnabled: true,
+      internalAudioEnabled: false, // MUTO DI DEFAULT: SOLO TRASMISSIONE MIDI
       zoomBars: 64,
       chain: [
         { pat: 0, loops: 2 },
@@ -545,6 +552,19 @@
     let midiAccess = null;
     let currentStep = 0;
     let sequencerTimer = null;
+    let midiLedTimer = null;
+
+    function flashMidiLed() {
+      const led = document.getElementById('midiActivityLed');
+      if (!led) return;
+      led.classList.remove('bg-zinc-700');
+      led.classList.add('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
+      clearTimeout(midiLedTimer);
+      midiLedTimer = setTimeout(() => {
+        led.classList.remove('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
+        led.classList.add('bg-zinc-700');
+      }, 60);
+    }
 
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -552,6 +572,7 @@
       return audioCtx;
     }
 
+    // RIPRODUZIONE AUDIO INTERNA BLOCCATA SE SPENTA
     function playInternalSound(type, note, vel, durationSec) {
       if (!project.internalAudioEnabled) return;
       try {
@@ -559,19 +580,17 @@
         const gain = ctx.createGain();
         gain.gain.setValueAtTime((vel / 127) * 0.35, ctx.currentTime);
 
-        if (type === 'drum') {
-          if (note === 36) {
-            const osc = ctx.createOscillator();
-            osc.frequency.setValueAtTime(140, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.8, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.3);
-            return;
-          }
+        if (type === 'drum' && note === 36) {
+          const osc = ctx.createOscillator();
+          osc.frequency.setValueAtTime(140, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.8, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+          return;
         }
 
         const osc = ctx.createOscillator();
@@ -591,47 +610,46 @@
     }
 
     // ==========================================
-    // SISTEMA TRASMISSIONE MIDI USB BROADCAST & FILTERING
+    // TRASMISSIONE NATIVA MIDI USB CON Uint8Array
     // ==========================================
     function sendMidiNoteOn(channel, note, velocity) {
       if (!document.getElementById('chkSendNotes').checked) return;
-      if (!midiAccess) return;
+      if (!midiAccess || midiAccess.outputs.size === 0) return;
 
-      const ch = Math.max(0, Math.min(15, channel - 1));
+      const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
       const vel = Math.max(1, Math.min(127, velocity || 100));
-      const statusByte = 0x90 | ch;
-      const msg = [statusByte, note, vel];
+      const raw = new Uint8Array([0x90 | ch, note & 0x7F, vel]);
 
       const selectedOut = document.getElementById('selMidiOut').value;
       if (selectedOut === 'ALL') {
         midiAccess.outputs.forEach(port => {
-          try { port.send(msg); } catch (e) {}
+          try { port.send(raw); } catch (e) {}
         });
       } else {
         const port = midiAccess.outputs.get(selectedOut);
         if (port) {
-          try { port.send(msg); } catch (e) {}
+          try { port.send(raw); } catch (e) {}
         }
       }
+      flashMidiLed();
     }
 
     function sendMidiNoteOff(channel, note) {
       if (!document.getElementById('chkSendNotes').checked) return;
-      if (!midiAccess) return;
+      if (!midiAccess || midiAccess.outputs.size === 0) return;
 
-      const ch = Math.max(0, Math.min(15, channel - 1));
-      const statusByte = 0x80 | ch;
-      const msg = [statusByte, note, 0];
+      const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
+      const raw = new Uint8Array([0x80 | ch, note & 0x7F, 0]);
 
       const selectedOut = document.getElementById('selMidiOut').value;
       if (selectedOut === 'ALL') {
         midiAccess.outputs.forEach(port => {
-          try { port.send(msg); } catch (e) {}
+          try { port.send(raw); } catch (e) {}
         });
       } else {
         const port = midiAccess.outputs.get(selectedOut);
         if (port) {
-          try { port.send(msg); } catch (e) {}
+          try { port.send(raw); } catch (e) {}
         }
       }
     }
@@ -641,8 +659,8 @@
       midiAccess.outputs.forEach(port => {
         for (let ch = 0; ch < 16; ch++) {
           try {
-            port.send([0xB0 | ch, 123, 0]); // All Notes Off
-            port.send([0xB0 | ch, 120, 0]); // All Sound Off
+            port.send(new Uint8Array([0xB0 | ch, 123, 0])); // All Notes Off
+            port.send(new Uint8Array([0xB0 | ch, 120, 0])); // All Sound Off
           } catch (e) {}
         }
       });
@@ -651,20 +669,13 @@
 
     function initWebMIDI() {
       if (navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess({ sysex: true }).then(m => {
+        navigator.requestMIDIAccess({ sysex: false }).then(m => {
           midiAccess = m;
           updateMidiPortSelectors();
           m.onstatechange = updateMidiPortSelectors;
           document.getElementById('lblUsbMidiStatus').textContent = `Connesso (${m.outputs.size} out / ${m.inputs.size} in)`;
-        }).catch(err => {
-          // Fallback senza sysex
-          navigator.requestMIDIAccess({ sysex: false }).then(m => {
-            midiAccess = m;
-            updateMidiPortSelectors();
-            m.onstatechange = updateMidiPortSelectors;
-          }).catch(() => {
-            document.getElementById('lblUsbMidiStatus').textContent = "Non disponibile o permessi negati";
-          });
+        }).catch(() => {
+          document.getElementById('lblUsbMidiStatus').textContent = "Permesso USB-MIDI negato o assente";
         });
       }
     }
@@ -721,6 +732,7 @@
       }
     }
 
+    // Step Sequencer Tick con routing rigoroso traccia -> canale
     function stepSequencerTick() {
       const currentPat = project.patterns[project.activePattern];
       if (!currentPat) return;
@@ -732,12 +744,14 @@
         const trk = currentPat.tracks[t];
         if (trk.mute || (hasSolo && !trk.solo)) continue;
 
+        const targetChannel = trk.ch || (t + 1);
+
         for (let n of trk.notes) {
           if (n.step === currentStep) {
             const dur = n.len * stepDurationSec;
             playInternalSound(trk.type, n.note, n.vel, dur);
-            sendMidiNoteOn(trk.ch, n.note, n.vel);
-            setTimeout(() => sendMidiNoteOff(trk.ch, n.note), dur * 1000 * 0.95);
+            sendMidiNoteOn(targetChannel, n.note, n.vel);
+            setTimeout(() => sendMidiNoteOff(targetChannel, n.note), dur * 1000 * 0.95);
           }
         }
       }
@@ -763,7 +777,7 @@
 
     function startPlayback() {
       if (project.isPlaying) return;
-      getAudioContext();
+      if (project.internalAudioEnabled) getAudioContext();
       project.isPlaying = true;
       document.getElementById('btnPlay').classList.add('bg-emerald-500', 'glow-accent');
       const intervalMs = (60000 / project.bpm) / 4;
@@ -806,7 +820,7 @@
               <span class="w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-emerald-400'}"></span>
               <span class="font-black text-xs truncate text-zinc-100">${trk.name}</span>
             </div>
-            <span class="text-[10px] font-mono app-btn border px-1 rounded text-zinc-300">CH ${trk.ch}</span>
+            <span class="text-[10px] font-mono app-btn border px-1 rounded text-amber-400 font-bold">CH ${trk.ch}</span>
           </div>
 
           <div class="flex items-center justify-between text-[9px] font-black my-1">
@@ -859,7 +873,7 @@
     }
 
     // ==========================================
-    // PIANO ROLL: SELETTORE MIDI CH, NOME, DRUM/INST & SELECT A TOGGLE
+    // PIANO ROLL ENGINE
     // ==========================================
     const canvas = document.getElementById('dawCanvas');
     const ctx = canvas.getContext('2d');
@@ -868,9 +882,8 @@
     let isDraggingKeys = false;
     let dragStartY = 0;
     let activeDrawingNote = null;
-    let selectedNotes = []; // Note selezionate con tool SELECT
+    let selectedNotes = [];
 
-    // Popola select dei canali MIDI (1-16)
     const midiChSelect = document.getElementById('edTrackMidiChSelect');
     for (let c = 1; c <= 16; c++) {
       const opt = document.createElement('option');
@@ -904,7 +917,7 @@
       });
       renderEditorTrackRail();
       renderTracksGrid();
-      showToast(`Canale MIDI impostato su: CH ${newCh}`);
+      showToast(`Traccia assegnata a MIDI CH ${newCh}`);
     };
 
     function renderEditorTrackRail() {
@@ -1121,7 +1134,6 @@
       document.getElementById('lblNoteCount').textContent = trk.notes.length;
     }
 
-    // Pointer Events: Inserimento Note, Drag Length & Tool SELECT Toggle
     canvas.addEventListener('pointerdown', e => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1177,14 +1189,13 @@
         updateSelectionStatus();
         drawPianoRoll();
       } else if (currentTool === 'select') {
-        // Modalità SELECT: Tocca per selezionare / deselezionare
         const found = trk.notes.find(n => clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len);
         if (found) {
           const selIdx = selectedNotes.indexOf(found);
           if (selIdx !== -1) {
-            selectedNotes.splice(selIdx, 1); // Deseleziona
+            selectedNotes.splice(selIdx, 1);
           } else {
-            selectedNotes.push(found); // Seleziona
+            selectedNotes.push(found);
             playInternalSound(trk.type, found.note, found.vel, 0.15);
           }
           updateSelectionStatus();
@@ -1208,7 +1219,6 @@
         return;
       }
 
-      // Drag estensione nota melodica quantizzata
       if (currentTool === 'draw' && activeDrawingNote) {
         const pat = project.patterns[project.activePattern];
         const trk = pat.tracks[project.selectedTrackIndex];
@@ -1276,10 +1286,10 @@
       const btn = document.getElementById('btnEdSoloToggle');
       const lbl = document.getElementById('lblEdSolo');
       if (trk.solo) {
-        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn-accent glow-accent flex items-center gap-1';
+        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn-accent glow-accent flex items-center gap-1';
         lbl.textContent = 'SOLO ON';
       } else {
-        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1';
+        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1';
         lbl.textContent = 'SOLO';
       }
     }
@@ -1656,11 +1666,20 @@
       }
     };
 
+    // Toggle Audio Interno
     document.getElementById('btnToggleAudio').onclick = () => {
       project.internalAudioEnabled = !project.internalAudioEnabled;
       const lbl = document.getElementById('lblAudioStatus');
-      lbl.textContent = project.internalAudioEnabled ? 'ON' : 'OFF (MIDI ONLY)';
-      lbl.className = project.internalAudioEnabled ? 'text-emerald-400 font-bold' : 'text-zinc-500 font-bold';
+      if (project.internalAudioEnabled) {
+        lbl.textContent = 'ON';
+        lbl.className = 'text-emerald-400 font-bold';
+        getAudioContext();
+        showToast("Audio sintetizzato interno ATTIVATO");
+      } else {
+        lbl.textContent = 'OFF (MIDI ONLY)';
+        lbl.className = 'text-zinc-500 font-bold';
+        showToast("Audio interno DISATTIVATO (Solo MIDI Hardware)");
+      }
     };
 
     document.getElementById('edTrackTypeSelect').onchange = (e) => {
@@ -1678,9 +1697,25 @@
     document.getElementById('btnSettings').onclick = () => document.getElementById('modalSettings').classList.remove('hidden');
     document.getElementById('btnCloseSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
     document.getElementById('btnSaveSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
+    
     document.getElementById('btnRescanMidi').onclick = () => {
       initWebMIDI();
       showToast("Porte MIDI USB aggiornate");
+    };
+
+    // TEST INVIO DIRETTO A TUTTI I CANALI (KORG NTS-1)
+    document.getElementById('btnTestNts1').onclick = () => {
+      if (!midiAccess || midiAccess.outputs.size === 0) {
+        showToast("ERRORE: Nessun cavo o interfaccia MIDI USB rilevata!");
+        return;
+      }
+      for (let ch = 1; ch <= 16; ch++) {
+        setTimeout(() => {
+          sendMidiNoteOn(ch, 60, 127);
+          setTimeout(() => sendMidiNoteOff(ch, 60), 250);
+        }, (ch - 1) * 200);
+      }
+      showToast("Invio nota C4 a cascata sui canali 1-16 (guarda l'NTS-1)");
     };
 
     document.querySelectorAll('.theme-select-btn').forEach(btn => {
