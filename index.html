@@ -155,7 +155,7 @@
       <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
     </section>
 
-    <!-- 2. PIANO ROLL -->
+    <!-- 2. PIANO ROLL CON VELOCITY LANE A SCOMPARSA -->
     <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
       <div class="app-panel border rounded-t px-2 py-1.5 flex items-center justify-between shrink-0 gap-2 overflow-x-auto">
         <div class="flex items-center gap-2 flex-wrap">
@@ -191,6 +191,11 @@
             <button id="toolEraser" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⌫ ERASE</button>
           </div>
 
+          <!-- Pulsante per aprire a tendina la barra Velocity -->
+          <button id="btnToggleVelocity" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold border app-btn flex items-center gap-1 text-amber-400">
+            📊 VELOCITY <span id="lblVelArrow">▼</span>
+          </button>
+
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>SNAP:</span>
             <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono">
@@ -219,10 +224,26 @@
         </div>
       </div>
 
+      <!-- Wrapper Principale Griglia + Velocity -->
       <div class="flex-1 flex overflow-hidden border border-t-0 app-border min-h-0">
         <div id="edTrackRail" class="w-48 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
-        <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95 min-h-0">
-          <canvas id="dawCanvas" class="w-full h-full block"></canvas>
+        
+        <div class="flex-1 flex flex-col min-h-0 relative">
+          <!-- Piano Roll Canvas -->
+          <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95 min-h-0">
+            <canvas id="dawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+          </div>
+
+          <!-- Barra della Velocity a tendina (collassabile) -->
+          <div id="velocityContainer" class="h-28 border-t app-border bg-[#0a0c14] relative hidden shrink-0 flex flex-col">
+            <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 border-b app-border text-[10px] text-zinc-400 font-bold shrink-0">
+              <span>LANE VELOCITY (Tocca o trascina sulle barre per impostare il valore 1-127)</span>
+              <span class="text-amber-400 font-mono" id="lblCurrentVelHover">VEL: --</span>
+            </div>
+            <div class="flex-1 relative overflow-hidden">
+              <canvas id="velocityCanvas" class="w-full h-full block cursor-ns-resize"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -357,7 +378,7 @@
 
   <div id="toast" class="fixed bottom-3 right-3 app-panel border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
 
-  <!-- JAVASCRIPT ENGINE ETHERSYNTH -->
+  <!-- JAVASCRIPT ENGINE -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -430,6 +451,7 @@
     project.patterns.push(createNewPatternObject(2, "C - Breakdown", 32, "#22c55e"));
     project.patterns.push(createNewPatternObject(3, "D - Outro", 64, "#ec4899"));
 
+    // Demo Notes NTS-1
     for (let s = 0; s < 64; s += 8) project.patterns[0].tracks[4].notes.push({ step: s, note: 60, len: 4, vel: 110 });
     for (let s = 4; s < 64; s += 8) project.patterns[0].tracks[4].notes.push({ step: s, note: 67, len: 3, vel: 115 });
     for (let s = 0; s < 64; s += 4) project.patterns[0].tracks[0].notes.push({ step: s, note: 36, len: 2, vel: 100 });
@@ -539,7 +561,7 @@
           showToast("Consenti l'accesso MIDI nel popup");
         });
       } else {
-        showToast("Web MIDI non supportato dal browser");
+        showToast("Web MIDI non supportato");
       }
     }
 
@@ -700,7 +722,10 @@
         }
       }
 
-      if (activeView === 'editor') drawPianoRoll();
+      if (activeView === 'editor') {
+        drawPianoRoll();
+        if (velocityVisible) drawVelocityLane();
+      }
       if (activeView === 'chainer') updateChainerPlayhead();
     }
 
@@ -721,7 +746,10 @@
       currentStep = 0;
       document.getElementById('btnPlay').classList.remove('bg-emerald-500', 'glow-accent');
       sendMidiPanic();
-      if (activeView === 'editor') drawPianoRoll();
+      if (activeView === 'editor') {
+        drawPianoRoll();
+        if (velocityVisible) drawVelocityLane();
+      }
       if (activeView === 'chainer') updateChainerPlayhead();
     }
 
@@ -802,14 +830,30 @@
       updateEditorSoloState();
     }
 
+    // ==========================================
+    // PIANO ROLL & VELOCITY ENGINE
+    // ==========================================
     const canvas = document.getElementById('dawCanvas');
     const ctx = canvas.getContext('2d');
+    const velCanvas = document.getElementById('velocityCanvas');
+    const velCtx = velCanvas.getContext('2d');
+
     let currentTool = 'draw';
     let octaveOffset = 48;
     let isDraggingKeys = false;
     let dragStartY = 0;
     let activeDrawingNote = null;
     let selectedNotes = [];
+
+    // Stato Maniglie di Ridimensionamento
+    let resizingMode = null; // 'left' | 'right' | null
+    let resizeTargetNote = null;
+    let resizeInitialStep = 0;
+    let resizeInitialLen = 1;
+
+    // Stato Velocity Lane
+    let velocityVisible = false;
+    let isDraggingVelocity = false;
 
     const midiChSelect = document.getElementById('edTrackMidiChSelect');
     for (let c = 1; c <= 16; c++) {
@@ -841,6 +885,22 @@
       renderEditorTrackRail();
       renderTracksGrid();
       showToast(`Assegnato a MIDI CH ${newCh}`);
+    };
+
+    // Toggle Tendina Velocity
+    document.getElementById('btnToggleVelocity').onclick = () => {
+      velocityVisible = !velocityVisible;
+      const velContainer = document.getElementById('velocityContainer');
+      const arrow = document.getElementById('lblVelArrow');
+      if (velocityVisible) {
+        velContainer.classList.remove('hidden');
+        arrow.textContent = '▲';
+        setTimeout(resizeCanvas, 20);
+      } else {
+        velContainer.classList.add('hidden');
+        arrow.textContent = '▼';
+        setTimeout(resizeCanvas, 20);
+      }
     };
 
     function renderEditorTrackRail() {
@@ -876,6 +936,7 @@
           syncEditorHeaderValues();
           autoCenterPianoRoll();
           updateEditorSoloState();
+          if (velocityVisible) drawVelocityLane();
         };
 
         rail.appendChild(btn);
@@ -886,7 +947,15 @@
       if (!canvas || !canvas.parentElement) return;
       const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width || window.innerWidth;
-      canvas.height = rect.height || (window.innerHeight - 120);
+      canvas.height = rect.height || 400;
+
+      if (velocityVisible && velCanvas && velCanvas.parentElement) {
+        const vRect = velCanvas.parentElement.getBoundingClientRect();
+        velCanvas.width = vRect.width || canvas.width;
+        velCanvas.height = vRect.height || 80;
+        drawVelocityLane();
+      }
+
       drawPianoRoll();
     }
     window.addEventListener('resize', resizeCanvas);
@@ -903,8 +972,6 @@
     function updateSelectionStatus() {
       const btnDel = document.getElementById('btnEdDeleteSelected');
       const btnDesel = document.getElementById('btnEdDeselectAll');
-      const countLbl = document.getElementById('lblSelectedCount');
-      if (countLbl) countLbl.textContent = selectedNotes.length;
       if (selectedNotes.length > 0) {
         btnDel.classList.remove('hidden');
         btnDesel.classList.remove('hidden');
@@ -976,7 +1043,7 @@
             ctx.fillStyle = isSelected ? '#38bdf8' : '#f97316';
             ctx.fillRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
             ctx.strokeStyle = isSelected ? '#ffffff' : '#ea580c';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 2;
             ctx.strokeRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
 
             ctx.fillStyle = isSelected ? '#000' : '#fff';
@@ -1021,23 +1088,36 @@
           ctx.stroke();
         }
 
+        // Rendering Note con Maniglie di Resize ◀ e ▶
         trk.notes.forEach(n => {
           const rowIndex = numRows - 1 - (n.note - octaveOffset);
           if (rowIndex >= 0 && rowIndex < numRows && n.step < visibleSteps) {
             const x = keyWidth + n.step * stepWidth;
             const y = rowIndex * rowHeight;
-            const w = Math.max(stepWidth * n.len - 2, 6);
+            const w = Math.max(stepWidth * n.len - 2, 8);
             const isSelected = selectedNotes.includes(n);
 
             ctx.fillStyle = isSelected ? '#38bdf8' : (pat.color || 'var(--accent-color, #f59e0b)');
             ctx.fillRect(x + 1, y + 1, w, rowHeight - 2);
             ctx.strokeStyle = isSelected ? '#ffffff' : '#b45309';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 1.5;
             ctx.strokeRect(x + 1, y + 1, w, rowHeight - 2);
 
+            // Freccetta Sinistra (◀)
             ctx.fillStyle = '#000000';
-            ctx.font = '9px sans-serif font-black';
-            ctx.fillText(`v${n.vel}`, x + 4, y + 13);
+            ctx.font = '8px monospace font-black';
+            ctx.fillText('◀', x + 2, y + 13);
+
+            // Freccetta Destra (▶)
+            if (w > 18) {
+              ctx.fillText('▶', x + w - 8, y + 13);
+            }
+
+            // Testo Velocity
+            if (w > 32) {
+              ctx.font = '9px sans-serif font-black';
+              ctx.fillText(`v${n.vel}`, x + 11, y + 13);
+            }
           }
         });
       }
@@ -1054,6 +1134,118 @@
       }
     }
 
+    // Disegno Lane Velocity (Grafico a barre)
+    function drawVelocityLane() {
+      if (!velocityVisible || !velCanvas) return;
+      velCtx.clearRect(0, 0, velCanvas.width, velCanvas.height);
+
+      const pat = project.patterns[project.activePattern];
+      if (!pat) return;
+      const trk = pat.tracks[project.selectedTrackIndex];
+      const isDrum = trk.type === 'drum';
+      const keyWidth = isDrum ? 85 : 55;
+      const visibleSteps = project.zoomBars;
+      const gridWidth = velCanvas.width - keyWidth;
+      const stepWidth = gridWidth / visibleSteps;
+
+      // Sfondo linea tastiera
+      velCtx.fillStyle = '#10131f';
+      velCtx.fillRect(0, 0, keyWidth, velCanvas.height);
+      velCtx.strokeStyle = '#262c44';
+      velCtx.strokeRect(0, 0, keyWidth, velCanvas.height);
+
+      velCtx.fillStyle = '#94a3b8';
+      velCtx.font = '9px monospace font-bold';
+      velCtx.fillText('127', 10, 14);
+      velCtx.fillText('64', 10, velCanvas.height / 2 + 3);
+      velCtx.fillText('1', 10, velCanvas.height - 4);
+
+      // Griglia verticale corrispondente ai passi
+      for (let s = 0; s <= visibleSteps; s++) {
+        const x = keyWidth + s * stepWidth;
+        if (x > velCanvas.width) break;
+        velCtx.strokeStyle = (s % 16 === 0) ? '#334155' : '#141824';
+        velCtx.lineWidth = 1;
+        velCtx.beginPath();
+        velCtx.moveTo(x, 0);
+        velCtx.lineTo(x, velCanvas.height);
+        velCtx.stroke();
+      }
+
+      // Linea orizzontale a metà (64)
+      velCtx.strokeStyle = '#1e2638';
+      velCtx.beginPath();
+      velCtx.moveTo(keyWidth, velCanvas.height / 2);
+      velCtx.lineTo(velCanvas.width, velCanvas.height / 2);
+      velCtx.stroke();
+
+      // Barre delle note
+      trk.notes.forEach(n => {
+        if (n.step < visibleSteps) {
+          const x = keyWidth + n.step * stepWidth;
+          const barHeight = ((n.vel || 100) / 127) * (velCanvas.height - 6);
+          const y = velCanvas.height - barHeight - 2;
+          const isSelected = selectedNotes.includes(n);
+
+          velCtx.fillStyle = isSelected ? '#38bdf8' : (pat.color || '#f59e0b');
+          velCtx.fillRect(x + 2, y, Math.max(stepWidth - 4, 4), barHeight);
+
+          // Testina superiore
+          velCtx.fillStyle = '#ffffff';
+          velCtx.fillRect(x + 1, y, Math.max(stepWidth - 2, 6), 3);
+        }
+      });
+    }
+
+    // Rileva se il tocco è avvenuto sui bordi (◀ / ▶)
+    function detectNoteEdgeHover(x, y) {
+      const pat = project.patterns[project.activePattern];
+      const trk = pat.tracks[project.selectedTrackIndex];
+      if (trk.type === 'drum') return null;
+
+      const keyWidth = 55;
+      const visibleSteps = project.zoomBars;
+      const stepWidth = (canvas.width - keyWidth) / visibleSteps;
+      const rowHeight = 20;
+      const numRows = Math.floor(canvas.height / rowHeight);
+
+      const HANDLE_SIZE = 12; // pixel del bordo sensibile
+
+      for (let n of trk.notes) {
+        const rowIndex = numRows - 1 - (n.note - octaveOffset);
+        if (rowIndex < 0 || rowIndex >= numRows) continue;
+
+        const noteX = keyWidth + n.step * stepWidth;
+        const noteY = rowIndex * rowHeight;
+        const noteW = Math.max(stepWidth * n.len - 2, 8);
+
+        if (y >= noteY && y <= noteY + rowHeight) {
+          // Bordo Sinistro
+          if (x >= noteX && x <= noteX + HANDLE_SIZE) {
+            return { note: n, edge: 'left' };
+          }
+          // Bordo Destro
+          if (x >= noteX + noteW - HANDLE_SIZE && x <= noteX + noteW + 4) {
+            return { note: n, edge: 'right' };
+          }
+        }
+      }
+      return null;
+    }
+
+    // Gestione Mouse Cursor sul Piano Roll
+    canvas.addEventListener('pointermove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (!resizingMode && !isDraggingKeys && currentTool === 'draw') {
+        const hit = detectNoteEdgeHover(x, y);
+        canvas.style.cursor = hit ? 'ew-resize' : 'crosshair';
+      }
+    });
+
+    // Pointerdown Piano Roll
     canvas.addEventListener('pointerdown', e => {
       ensureMidiReady();
 
@@ -1071,6 +1263,16 @@
           isDraggingKeys = true;
           dragStartY = y;
         }
+        return;
+      }
+
+      // 1. Controlla se abbiamo toccato un bordo per ridimensionare
+      const edgeHit = detectNoteEdgeHover(x, y);
+      if (edgeHit && currentTool === 'draw') {
+        resizingMode = edgeHit.edge;
+        resizeTargetNote = edgeHit.note;
+        resizeInitialStep = edgeHit.note.step;
+        resizeInitialLen = edgeHit.note.len;
         return;
       }
 
@@ -1105,11 +1307,13 @@
           setTimeout(() => sendMidiNoteOff(trk.ch, clickedNote), 200);
         }
         drawPianoRoll();
+        if (velocityVisible) drawVelocityLane();
       } else if (currentTool === 'eraser') {
         trk.notes = trk.notes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
         selectedNotes = selectedNotes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
         updateSelectionStatus();
         drawPianoRoll();
+        if (velocityVisible) drawVelocityLane();
       } else if (currentTool === 'select') {
         const found = trk.notes.find(n => clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len);
         if (found) {
@@ -1124,10 +1328,12 @@
           }
           updateSelectionStatus();
           drawPianoRoll();
+          if (velocityVisible) drawVelocityLane();
         }
       }
     });
 
+    // Pointermove per trascinamento note e resize con maniglie
     canvas.addEventListener('pointermove', e => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1143,14 +1349,37 @@
         return;
       }
 
+      const keyWidth = 55;
+      const stepWidth = (canvas.width - keyWidth) / project.zoomBars;
+      const currentStepPointer = (x - keyWidth) / stepWidth;
+      const snap = getGridSnapStep();
+
+      // Ridimensionamento tramite Maniglia Sinistra (◀) o Destra (▶)
+      if (resizingMode && resizeTargetNote) {
+        if (resizingMode === 'right') {
+          const newLen = Math.max(snap, Math.round((currentStepPointer - resizeTargetNote.step) / snap) * snap);
+          if (resizeTargetNote.len !== newLen) {
+            resizeTargetNote.len = newLen;
+            drawPianoRoll();
+          }
+        } else if (resizingMode === 'left') {
+          const snappedStep = Math.max(0, Math.round(currentStepPointer / snap) * snap);
+          const endStep = resizeInitialStep + resizeInitialLen;
+          if (snappedStep < endStep) {
+            resizeTargetNote.step = snappedStep;
+            resizeTargetNote.len = endStep - snappedStep;
+            drawPianoRoll();
+          }
+        }
+        return;
+      }
+
+      // Drag estensione normale durante il DRAW
       if (currentTool === 'draw' && activeDrawingNote) {
         const pat = project.patterns[project.activePattern];
         const trk = pat.tracks[project.selectedTrackIndex];
         if (trk.type !== 'drum') {
-          const keyWidth = 55;
-          const stepWidth = (canvas.width - keyWidth) / project.zoomBars;
-          const pointerStep = Math.floor((x - keyWidth) / stepWidth);
-          const snap = getGridSnapStep();
+          const pointerStep = Math.floor(currentStepPointer);
           const rawLen = Math.max(snap, pointerStep - activeDrawingNote.step + 1);
           const snappedLen = Math.max(snap, Math.round(rawLen / snap) * snap);
 
@@ -1165,6 +1394,50 @@
     window.addEventListener('pointerup', () => {
       isDraggingKeys = false;
       activeDrawingNote = null;
+      resizingMode = null;
+      resizeTargetNote = null;
+      isDraggingVelocity = false;
+    });
+
+    // Interazione Diretta su Canvas Velocity
+    function handleVelocityPointer(e) {
+      const rect = velCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const pat = project.patterns[project.activePattern];
+      const trk = pat.tracks[project.selectedTrackIndex];
+      const isDrum = trk.type === 'drum';
+      const keyWidth = isDrum ? 85 : 55;
+
+      if (x < keyWidth) return;
+
+      const visibleSteps = project.zoomBars;
+      const stepWidth = (velCanvas.width - keyWidth) / visibleSteps;
+      const clickedStep = Math.floor((x - keyWidth) / stepWidth);
+
+      // Calcola valore velocity 1 - 127 in base alla posizione verticale
+      const clampedY = Math.max(2, Math.min(velCanvas.height - 4, y));
+      const velVal = Math.max(1, Math.min(127, Math.round((1 - (clampedY / velCanvas.height)) * 127)));
+
+      document.getElementById('lblCurrentVelHover').textContent = `VEL: ${velVal}`;
+
+      // Assegna alla nota corrispondente allo step
+      const targetNote = trk.notes.find(n => clickedStep >= n.step && clickedStep < n.step + (n.len || 1));
+      if (targetNote) {
+        targetNote.vel = velVal;
+        drawVelocityLane();
+        drawPianoRoll();
+      }
+    }
+
+    velCanvas.addEventListener('pointerdown', e => {
+      isDraggingVelocity = true;
+      handleVelocityPointer(e);
+    });
+
+    velCanvas.addEventListener('pointermove', e => {
+      if (isDraggingVelocity) handleVelocityPointer(e);
     });
 
     document.getElementById('btnEdDeleteSelected').onclick = () => {
@@ -1173,6 +1446,7 @@
       selectedNotes = [];
       updateSelectionStatus();
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
       renderEditorTrackRail();
       showToast("Note eliminate");
     };
@@ -1181,6 +1455,7 @@
       selectedNotes = [];
       updateSelectionStatus();
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
     };
 
     document.getElementById('btnEdClear').onclick = () => {
@@ -1188,12 +1463,14 @@
       selectedNotes = [];
       updateSelectionStatus();
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
       renderEditorTrackRail();
     };
 
     document.getElementById('selZoomBars').onchange = (e) => {
       project.zoomBars = parseInt(e.target.value);
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
     };
 
     function autoCenterPianoRoll() {
@@ -1203,6 +1480,7 @@
         octaveOffset = Math.max(12, Math.min(96, avgNote - 8));
       }
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
     }
 
     function updateEditorSoloState() {
@@ -1571,6 +1849,7 @@
       project.patterns[project.activePattern].tracks[project.selectedTrackIndex].type = e.target.value;
       renderEditorTrackRail();
       drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
       renderTracksGrid();
     };
 
@@ -1613,7 +1892,10 @@
       btn.onclick = () => {
         document.body.className = `flex flex-col h-screen w-screen overflow-hidden select-none theme-${btn.dataset.theme}`;
         showToast(`Tema attivo: ${btn.textContent}`);
-        if (activeView === 'editor') drawPianoRoll();
+        if (activeView === 'editor') {
+          drawPianoRoll();
+          if (velocityVisible) drawVelocityLane();
+        }
       };
     });
 
