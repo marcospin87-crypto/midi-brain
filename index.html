@@ -19,48 +19,12 @@
       --btn-bg: #1e2235;
       --btn-border: #333a56;
     }
-    body.theme-ableton {
-      --bg-main: #1e1e1e;
-      --bg-panel: #2b2b2b;
-      --bg-card: #353535;
-      --border-color: #484848;
-      --accent-color: #f9b233;
-      --text-main: #e2e8f0;
-      --btn-bg: #3c3c3c;
-      --btn-border: #525252;
+    * { 
+      box-sizing: border-box; 
+      user-select: none; 
+      -webkit-user-select: none; 
+      touch-action: none; 
     }
-    body.theme-fl {
-      --bg-main: #15171c;
-      --bg-panel: #20232a;
-      --bg-card: #292d36;
-      --border-color: #3d4352;
-      --accent-color: #ff6b2b;
-      --text-main: #f8fafc;
-      --btn-bg: #323743;
-      --btn-border: #4a5163;
-    }
-    body.theme-acid {
-      --bg-main: #050b06;
-      --bg-panel: #0d1a0e;
-      --bg-card: #142716;
-      --border-color: #1e3d22;
-      --accent-color: #22c55e;
-      --text-main: #f0fdf4;
-      --btn-bg: #19331b;
-      --btn-border: #28542c;
-    }
-    body.theme-blue {
-      --bg-main: #050d1a;
-      --bg-panel: #0a1a33;
-      --bg-card: #10264b;
-      --border-color: #1a3c75;
-      --accent-color: #38bdf8;
-      --text-main: #f0f9ff;
-      --btn-bg: #153261;
-      --btn-border: #234c8f;
-    }
-
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
     html, body {
       background-color: var(--bg-main);
       color: var(--text-main);
@@ -77,27 +41,53 @@
     .app-btn-accent { background-color: var(--accent-color); color: #000 !important; font-weight: 800; }
     .app-border { border-color: var(--border-color); }
     .glow-accent { box-shadow: 0 0 12px var(--accent-color); }
-    .touch-btn { touch-action: manipulation; transition: transform 0.06s ease, filter 0.06s ease; }
-    .touch-btn:active { transform: scale(0.96); filter: brightness(1.25); }
+    .touch-btn { touch-action: manipulation; transition: filter 0.05s ease; }
+    .touch-btn:active { filter: brightness(1.25); }
+
+    input[type=range].fader-v {
+      -webkit-appearance: slider-vertical;
+      writing-mode: bt-lr;
+      width: 24px;
+      height: 120px;
+      background: transparent;
+      cursor: pointer;
+    }
 
     input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
     input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
 
-    .trk-meter-bar {
-      transition: width 0.04s ease-out, background-color 0.15s ease-out;
+    .vu-segment {
+      height: 4px;
+      border-radius: 1px;
+      background-color: #1f293d;
+      transition: background-color 0.04s ease-out;
     }
+    .vu-segment.lit-green { background-color: #10b981; box-shadow: 0 0 4px #10b981; }
+    .vu-segment.lit-amber { background-color: #f59e0b; box-shadow: 0 0 4px #f59e0b; }
+    .vu-segment.lit-red { background-color: #ef4444; box-shadow: 0 0 4px #ef4444; }
   </style>
 </head>
 <body class="flex flex-col h-screen w-screen overflow-hidden select-none">
 
   <!-- TRANSPORT / HEADER -->
-  <header class="app-panel border-b px-2 py-1 flex items-center justify-between shrink-0 h-12 z-20 overflow-hidden gap-2">
+  <header class="app-panel border-b px-2 py-1 flex items-center justify-between shrink-0 h-12 min-h-[48px] max-h-[48px] z-20 overflow-hidden gap-2">
     <div class="flex items-center gap-2 shrink-0">
       <div class="flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed"></span>
         <span class="font-black text-sm tracking-widest text-amber-500">BRAIN HW</span>
         <span class="w-2.5 h-2.5 rounded-full bg-zinc-700 transition-colors duration-75" id="midiActivityLed"></span>
-        <span class="text-[10px] app-btn px-1.5 py-0.5 rounded font-mono border">16-TRK</span>
+      </div>
+
+      <div class="h-6 w-px app-border mx-0.5"></div>
+
+      <!-- MASTER MIDI IN / OUT -->
+      <div class="flex items-center gap-1 app-card border p-0.5 rounded">
+        <button id="btnToggleMidiIn" class="touch-btn px-2 py-0.5 rounded font-black text-xs bg-emerald-600 text-white">
+          IN: <span id="lblMidiInStatus">ON</span>
+        </button>
+        <button id="btnToggleMidiOut" class="touch-btn px-2 py-0.5 rounded font-black text-xs bg-emerald-600 text-white">
+          OUT: <span id="lblMidiOutStatus">ON</span>
+        </button>
       </div>
 
       <div class="h-6 w-px app-border mx-0.5"></div>
@@ -109,9 +99,15 @@
         ■ STOP
       </button>
 
+      <!-- BPM + TAP TEMPO -->
       <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
         <span class="text-[10px] text-zinc-400 font-bold">BPM</span>
-        <input id="inputBpm" type="number" min="40" max="260" value="126" class="w-11 bg-transparent text-center font-mono font-bold text-xs text-amber-400 outline-none">
+        <button id="btnBpmMinus" class="touch-btn px-1 text-xs font-black text-amber-400 hover:text-white">-</button>
+        <input id="inputBpm" type="number" min="40" max="260" value="126" class="w-12 bg-transparent text-center font-mono font-bold text-xs text-amber-400 outline-none">
+        <button id="btnBpmPlus" class="touch-btn px-1 text-xs font-black text-amber-400 hover:text-white">+</button>
+        <button id="btnTapTempo" class="touch-btn px-2 py-0.5 ml-1 rounded bg-amber-500 text-black font-black text-xs shadow active:scale-95">
+          TAP
+        </button>
       </div>
 
       <button id="btnQuantizeToggle" class="touch-btn text-[10px] app-btn border px-2 py-1 rounded font-bold">
@@ -123,13 +119,12 @@
       </button>
     </div>
 
-    <!-- TABS -->
+    <!-- TABS PRINCIPALI -->
     <div class="flex items-center gap-1 shrink-0">
       <div class="flex app-card p-0.5 rounded border gap-1">
-        <button id="tabMixer" class="tab-btn px-3 py-1 rounded text-xs font-black app-btn-accent">MIXER 16</button>
+        <button id="tabMixer" class="tab-btn px-3 py-1 rounded text-xs font-black app-btn-accent">MIXER</button>
         <button id="tabEditor" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PIANO ROLL</button>
-        <button id="tabChainer" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">SONG CHAIN</button>
-        <button id="tabScenes" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PATTERNS & TIMELINE</button>
+        <button id="tabArranger" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">TIMELINE & ARRANGEMENT</button>
       </div>
     </div>
 
@@ -141,51 +136,51 @@
       <button id="btnPanic" class="touch-btn px-2 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-[10px]">
         PANIC
       </button>
-      <button id="btnSettings" class="touch-btn px-2.5 py-1 rounded app-btn-accent border text-black font-black text-xs shadow flex items-center gap-1">
-        ⚙ IMPOSTAZIONI
-      </button>
     </div>
   </header>
 
   <!-- MAIN VIEWPORT -->
   <main class="flex-1 relative overflow-hidden flex flex-col p-2 min-h-0">
 
-    <!-- 1. MIXER -->
-    <section id="viewMixer" class="view-panel h-full w-full flex flex-col">
-      <div class="flex justify-between items-center mb-1.5 shrink-0">
+    <!-- 1. SEZIONE MIXER CONSOLE -->
+    <section id="viewMixer" class="h-full w-full flex flex-col min-h-0">
+      <div class="flex justify-between items-center mb-2 shrink-0">
         <div class="flex items-center gap-2">
-          <span class="text-xs font-black tracking-wider uppercase text-zinc-300">16 Canali Hardware Mixer</span>
-          <span class="text-[10px] app-btn border px-2 py-0.5 rounded font-mono text-amber-400">GROUP LINKED MUTE & SOLO</span>
+          <span class="text-xs font-black tracking-wider uppercase text-zinc-300">Live Hardware Mixer Console</span>
+          <button id="btnAddMixerSlot" class="touch-btn px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-black text-xs font-black shadow flex items-center gap-1">
+            + AGGIUNGI STRIP
+          </button>
         </div>
         <div class="flex items-center gap-2 text-[10px]">
           <button id="btnUnmuteAll" class="touch-btn px-2.5 py-1 app-btn border rounded font-black hover:text-amber-400">UNMUTE ALL</button>
           <button id="btnClearSolo" class="touch-btn px-2.5 py-1 app-btn border rounded font-black hover:text-amber-400">CLEAR SOLO</button>
         </div>
       </div>
-      <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
+      
+      <div class="flex-1 min-h-0 overflow-x-auto overflow-y-auto pb-2">
+        <div id="tracksGrid" class="flex items-stretch gap-3 min-h-[460px] pb-4"></div>
+      </div>
     </section>
 
-    <!-- 2. PIANO ROLL CON BARRA STATICA E ALTEZZA BLOCCATA -->
-    <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
-      <!-- Toolbar ad altezza fissa (48px) senza wrap o jump -->
-      <div class="app-panel border rounded-t px-2 h-12 min-h-[48px] max-h-[48px] flex items-center justify-between shrink-0 gap-2 overflow-hidden flex-nowrap">
-        <div class="flex items-center gap-1.5 flex-nowrap overflow-x-auto shrink min-w-0 py-1">
-          <div class="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border app-border shrink-0">
+    <!-- 2. SEZIONE PIANO ROLL -->
+    <section id="viewEditor" class="h-full w-full flex-col min-h-0" style="display:none;">
+      <div class="app-panel border rounded-t px-2 h-12 min-h-[48px] max-h-[48px] flex items-center justify-between shrink-0 gap-1 overflow-hidden flex-nowrap">
+        <div class="flex items-center gap-1 flex-nowrap overflow-x-auto shrink min-w-0 py-1">
+          <div class="flex items-center gap-1 bg-black/40 px-1.5 py-0.5 rounded border app-border shrink-0">
             <span class="text-[10px] font-bold text-zinc-400">PAT:</span>
             <span id="lblEditorPatName" class="text-xs font-black text-amber-400">A</span>
           </div>
 
           <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
-            <span class="text-[10px] font-bold text-zinc-400">TRACCIA:</span>
+            <span class="text-[10px] font-bold text-zinc-400">TRK:</span>
             <input type="text" id="edTrackNameInput" class="w-20 bg-transparent text-xs font-black text-amber-400 outline-none truncate" value="Korg NTS-1">
           </div>
 
-          <div class="flex items-center gap-1 app-card border px-1 py-0.5 rounded shrink-0" title="Colore Traccia">
-            <input type="color" id="edTrackColorPicker" class="w-5 h-5 cursor-pointer bg-transparent border-0 rounded">
+          <div class="flex items-center gap-1 app-card border px-1 py-0.5 rounded shrink-0">
+            <input type="color" id="edTrackColorPicker" class="w-4 h-4 cursor-pointer bg-transparent border-0 rounded">
           </div>
 
-          <div class="flex items-center gap-1 app-card border px-1 py-0.5 rounded shrink-0">
-            <span class="text-[10px] font-bold text-zinc-400">CH:</span>
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
             <select id="edTrackMidiChSelect" class="app-btn border text-xs font-mono font-bold text-amber-400 rounded px-1 py-0.5 outline-none"></select>
           </div>
 
@@ -193,8 +188,8 @@
             🎧 <span id="lblEdSolo">SOLO</span>
           </button>
 
-          <button id="btnEdClockOnlyToggle" class="touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0" title="Invia solo MIDI Clock a questo canale senza note (es. KO-II)">
-            ⏱ <span id="lblEdClockOnly">CLOCK</span>
+          <button id="btnEdClockOnlyToggle" class="touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0" title="Invia solo MIDI Clock a questo canale">
+            ⏱ <span id="lblEdClockOnly">CLK</span>
           </button>
 
           <select id="edTrackTypeSelect" class="app-btn border text-xs font-bold rounded px-1.5 py-0.5 outline-none shrink-0">
@@ -202,27 +197,40 @@
             <option value="drum">🥁 DRUM</option>
           </select>
 
-          <div class="h-5 w-px app-border shrink-0"></div>
+          <!-- TASTO IMPORTA MIDI FILE -->
+          <button id="btnTriggerImportMidi" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black bg-indigo-600 hover:bg-indigo-500 text-white shrink-0 shadow flex items-center gap-1">
+            📁 IMPORT MIDI
+          </button>
+          <input type="file" id="inputMidiFile" accept=".mid,.midi" class="hidden">
 
-          <!-- Strumenti Draw, Select, Erase -->
-          <div class="flex app-card p-0.5 rounded border gap-1 shrink-0">
-            <button id="toolDraw" class="touch-btn px-2 py-0.5 rounded text-xs font-bold app-btn-accent" title="Disegna nota o trascina">✎ DRAW</button>
-            <button id="toolSelect" class="touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white" title="Trascina sulla griglia per selezionare più note">⬚ SELECT</button>
-            <button id="toolEraser" class="touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white" title="Cancella nota">⌫ ERASE</button>
+          <div class="flex items-center gap-1 bg-black/50 p-0.5 rounded border app-border shrink-0">
+            <button id="btnCopyEntireTrack" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black app-btn border text-cyan-400 hover:text-white">
+              ⎘ COPIA TRK
+            </button>
+            <button id="btnPasteEntireTrack" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black app-btn border text-cyan-400 hover:text-white">
+              📋 INCOLLA TRK
+            </button>
           </div>
 
-          <!-- Pulsanti Cronologia e Clipboard -->
-          <div class="flex app-card p-0.5 rounded border gap-1 shrink-0">
-            <button id="btnUndo" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Annulla (Ctrl+Z)">↶</button>
-            <button id="btnRedo" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Ripristina (Ctrl+Y)">↷</button>
-            <button id="btnCopy" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Copia selezione (Ctrl+C)">⎘ COPY</button>
-            <button id="btnPaste" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Incolla selezione (Ctrl+V)">📋 PASTE</button>
-            <button id="btnDuplicate" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Duplica note selezionate (Ctrl+D)">DUP</button>
+          <div class="h-4 w-px app-border shrink-0 mx-0.5"></div>
+
+          <div class="flex app-card p-0.5 rounded border gap-0.5 shrink-0">
+            <button id="toolDraw" class="touch-btn px-2 py-0.5 rounded text-xs font-bold app-btn-accent">✎ DRAW</button>
+            <button id="toolMove" class="touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">✋ MOVE</button>
+            <button id="toolSelect" class="touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⬚ SEL</button>
+            <button id="toolEraser" class="touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⌫ ERASE</button>
           </div>
 
-          <!-- Gate Note -->
+          <div class="flex app-card p-0.5 rounded border gap-0.5 shrink-0">
+            <button id="btnUndo" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Undo (Ctrl+Z)">↶</button>
+            <button id="btnRedo" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Redo (Ctrl+Y)">↷</button>
+            <button id="btnCopy" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black">COPY</button>
+            <button id="btnPaste" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black">PASTE</button>
+            <button id="btnDuplicate" class="touch-btn px-1.5 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black">DUP</button>
+          </div>
+
           <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
-            <span class="text-[10px] font-bold text-zinc-400">GATE:</span>
+            <span class="text-[10px] font-bold text-zinc-400">GT:</span>
             <select id="selNoteGate" class="app-btn border rounded px-1 py-0.5 outline-none font-mono text-[10px] font-bold text-amber-400">
               <option value="0.25">25%</option>
               <option value="0.50">50%</option>
@@ -232,2232 +240,112 @@
             </select>
           </div>
 
-          <!-- Durata Pattern -->
-          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
+          <div class="flex items-center gap-0.5 app-card border px-1 py-0.5 rounded shrink-0">
             <span class="text-[10px] font-bold text-zinc-400">LEN:</span>
             <button id="btnPatStepDec" class="touch-btn px-1 text-xs font-black app-btn border rounded text-amber-400">-</button>
-            <input type="number" id="inputPatSteps" min="1" max="128" value="64" class="w-9 bg-transparent text-center font-mono font-black text-xs text-amber-400 outline-none">
+            <input type="number" id="inputPatSteps" min="1" max="128" value="64" class="w-8 bg-transparent text-center font-mono font-black text-xs text-amber-400 outline-none">
             <button id="btnPatStepInc" class="touch-btn px-1 text-xs font-black app-btn border rounded text-amber-400">+</button>
-            <div class="flex gap-0.5">
-              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="16">16</button>
-              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="32">32</button>
-              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="64">64</button>
-              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="128">128</button>
-            </div>
           </div>
 
-          <!-- Snap -->
-          <div class="flex items-center gap-1 app-card border px-1 py-0.5 rounded shrink-0">
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
             <button id="btnToggleSnap" class="touch-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white">
-              SNAP: <span id="lblSnapStatus">ON</span>
+              <span id="lblSnapStatus">SNAP</span>
             </button>
-            <select id="selGridRes" class="app-btn border rounded px-1 py-0.5 outline-none font-mono text-[10px] font-bold">
+            <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-[10px] font-bold">
               <option value="32">1/32</option>
               <option value="16" selected>1/16</option>
               <option value="8">1/8</option>
               <option value="4">1/4</option>
             </select>
           </div>
-
-          <!-- Tendina Velocity -->
-          <button id="btnToggleVelocity" class="touch-btn px-2 py-0.5 rounded text-xs font-bold border app-btn flex items-center gap-1 text-amber-400 shrink-0">
-            📊 VEL <span id="lblVelArrow">▼</span>
-          </button>
-
-          <!-- Zoom -->
-          <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400 shrink-0">
-            <span>ZOOM:</span>
-            <select id="selZoomBars" class="app-btn border rounded px-1 py-0.5 outline-none font-mono text-amber-400 font-bold">
-              <option value="16">1B</option>
-              <option value="32">2B</option>
-              <option value="64" selected>4B</option>
-              <option value="128">8B</option>
-            </select>
-          </div>
         </div>
 
-        <!-- Sezione Pulsanti Selezione: larghezza fissa e opacità per layout rigido e statico -->
-        <div class="flex items-center gap-1 shrink-0 pl-1 border-l app-border">
-          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-xs text-zinc-300 font-bold opacity-0 pointer-events-none transition-opacity duration-150">DESEL</button>
-          <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black opacity-0 pointer-events-none transition-opacity duration-150">DEL</button>
-          <button id="btnEdClear" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-bold">CLEAR</button>
+        <div class="flex items-center gap-1 shrink-0 pl-1 border-l app-border min-w-[185px] justify-end">
+          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-[10px] text-zinc-300 font-bold opacity-0 pointer-events-none transition-opacity">DESEL</button>
+          <button id="btnEdDeleteSelected" class="touch-btn px-2.5 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300 font-black opacity-0 pointer-events-none transition-opacity flex items-center gap-1">
+            🗑 ELIMINA
+          </button>
+          <button id="btnEdClear" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-[10px] text-rose-300 font-bold">CLEAR</button>
         </div>
       </div>
 
-      <!-- Wrapper Principale Griglia + Velocity -->
-      <div class="flex-1 flex overflow-hidden border border-t-0 app-border min-h-0">
-        <div id="edTrackRail" class="w-56 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
+      <div class="flex-1 flex overflow-hidden border border-t-0 app-border min-h-0 relative">
+        <div id="edTrackRail" class="w-56 flex-none app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
         
-        <div class="flex-1 flex flex-col min-h-0 relative">
-          <!-- Piano Roll Canvas -->
-          <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95 min-h-0">
+        <div class="flex-1 flex flex-col min-h-0 relative overflow-hidden">
+          <div id="pianoRollWrapper" class="flex-1 relative overflow-hidden bg-black/95 min-h-0 w-full h-full">
             <canvas id="dawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <!-- Barra della Velocity a tendina -->
-          <div id="velocityContainer" class="h-28 border-t app-border bg-[#0a0c14] relative hidden shrink-0 flex flex-col">
-            <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 border-b app-border text-[10px] text-zinc-400 font-bold shrink-0">
-              <span>LANE VELOCITY (Tocca o trascina per regolare 1-127)</span>
-              <span class="text-amber-400 font-mono" id="lblCurrentVelHover">VEL: --</span>
-            </div>
-            <div class="flex-1 relative overflow-hidden">
-              <canvas id="velocityCanvas" class="w-full h-full block cursor-ns-resize"></canvas>
-            </div>
+    <!-- 3. SEZIONE TIMELINE & ARRANGEMENT CON SNAP MAGNETICO -->
+    <section id="viewArranger" class="h-full w-full flex flex-col gap-2 min-h-0" style="display:none;">
+      <div class="app-panel border rounded p-2 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs font-black tracking-wider text-amber-400 uppercase">DECK PATTERNS:</span>
+          <button id="btnCreatePattern" class="touch-btn px-3 py-1 rounded app-btn-accent text-xs font-black shadow flex items-center gap-1">
+            + NUOVO PATTERN
+          </button>
+          <button id="btnToggleSongMode" class="touch-btn px-3 py-1 rounded text-xs font-black app-btn border text-zinc-300">
+            MODALITÀ: <span id="lblSongMode" class="text-amber-400 font-black">TIMELINE SONG</span>
+          </button>
+
+          <!-- Pulsanti Timeline -->
+          <div class="flex items-center gap-1 bg-black/50 p-1 rounded border app-border">
+            <button id="btnTimelineDup" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black app-btn border text-cyan-400 hover:text-white" title="Duplica la parte selezionata">
+              ⎘ DUPLICA
+            </button>
+            <button id="btnTimelineDelete" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black bg-rose-950 border border-rose-800 text-rose-300" title="Elimina la parte selezionata">
+              🗑 ELIMINA
+            </button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 3. SONG CHAIN -->
-    <section id="viewChainer" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
-      <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-black tracking-wider text-amber-400">SONG CHAIN MASTER</span>
-          <button id="btnToggleSongMode" class="touch-btn px-3 py-1 rounded text-xs font-black app-btn border text-zinc-400">
-            MODO: <span id="lblSongMode" class="text-zinc-400">PATTERN LOOP</span>
+        <div class="flex items-center gap-1 text-[11px] font-mono text-zinc-300">
+          <span>LUNGHEZZA SONG: <b id="lblTotalSongSteps" class="text-amber-400">0</b> STEP</span>
+          <button id="btnClearTimeline" class="touch-btn px-2 py-0.5 ml-2 bg-rose-950 border border-rose-800 text-rose-300 font-black rounded text-[10px]">
+            RESET TIMELINE
           </button>
         </div>
-        <div class="flex items-center gap-1.5" id="patAddButtonsContainer">
-          <button id="btnClearChain" class="touch-btn px-2.5 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-xs">RESET CHAIN</button>
+      </div>
+
+      <!-- Scatola dei Pattern Disponibili -->
+      <div class="app-card border rounded p-2 shrink-0 overflow-x-auto">
+        <div id="patternsDeckContainer" class="flex items-center gap-2 min-h-[48px]"></div>
+      </div>
+
+      <!-- AREA ARRANGIAMENTO MULTITRACCIA DAW CON SNAP MAGNETICO -->
+      <div class="flex-1 app-card border rounded flex flex-col min-h-0 overflow-hidden shadow-2xl">
+        <div class="bg-black/50 border-b app-border px-3 py-1.5 flex justify-between items-center text-[11px] font-black uppercase text-zinc-300 shrink-0">
+          <span>ARRANGIAMENTO DAW (Trascina il blocco: si aggancia all'inizio/fine delle parti vicine)</span>
+          <span class="text-amber-400 font-mono text-[10px]" id="lblTimelineSelectionInfo">Nessuna parte selezionata</span>
         </div>
-      </div>
 
-      <div class="app-card border rounded p-3 h-44 shrink-0 flex flex-col justify-between shadow-xl">
-        <div class="flex justify-between items-center text-xs font-bold text-zinc-400 mb-1">
-          <span class="text-white uppercase tracking-wider text-sm font-black">Timeline Slot Song</span>
-          <div>TOTALE SLOT: <b id="lblChainLength" class="text-amber-400 font-mono text-sm">0</b></div>
+        <div class="flex-1 flex overflow-hidden min-h-0">
+          <div id="dawTrackHeaders" class="w-48 app-panel border-r app-border flex flex-col shrink-0 overflow-y-auto"></div>
+
+          <div id="dawArrangerTimeline" class="flex-1 flex flex-col overflow-x-auto overflow-y-auto relative bg-[#07090f]">
+            <div id="timelineRuler" class="h-6 border-b app-border bg-black/60 sticky top-0 z-10 flex items-center min-w-[1400px]"></div>
+            <div id="dawLanesContainer" class="flex flex-col flex-1 min-w-[1400px] relative"></div>
+          </div>
         </div>
-        <div id="chainSlotsContainer" class="flex-1 flex items-center gap-3 overflow-x-auto py-1 min-h-0"></div>
-      </div>
-
-      <div class="flex-1 app-card border rounded p-2.5 flex flex-col overflow-hidden min-h-0">
-        <span class="text-xs font-black tracking-wider uppercase text-zinc-300 mb-1.5">LIVE MULTI-TRACK MONITOR</span>
-        <div id="chainMonitorLanes" class="flex-1 grid grid-cols-2 gap-x-4 gap-y-1.5 overflow-hidden min-h-0"></div>
-      </div>
-    </section>
-
-    <!-- 4. PATTERNS & TIMELINE -->
-    <section id="viewScenes" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
-      <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
-        <h2 class="text-xs font-black tracking-wider text-amber-400 uppercase">Pattern Manager & Timeline Song DAW</h2>
-        <div class="flex items-center gap-2">
-          <select id="selNewPatSteps" class="app-btn border rounded px-1.5 py-0.5 font-mono text-amber-400 font-bold text-xs">
-            <option value="16">16 Step (1 Bar)</option>
-            <option value="32">32 Step (2 Bars)</option>
-            <option value="64" selected>64 Step (4 Bars)</option>
-            <option value="128">128 Step (8 Bars)</option>
-          </select>
-          <button id="btnCreatePattern" class="touch-btn px-3 py-1 rounded app-btn-accent text-xs">+ NUOVO PATTERN</button>
-        </div>
-      </div>
-
-      <div class="app-card border rounded p-2.5 shrink-0">
-        <div id="patternsDeck" class="flex items-center gap-3 overflow-x-auto pb-1"></div>
-      </div>
-
-      <div class="flex-1 app-card border rounded p-3 flex flex-col overflow-hidden min-h-0">
-        <div class="flex justify-between items-center mb-2 shrink-0">
-          <span class="text-xs font-black tracking-wider text-zinc-200 uppercase">ARRANGIAMENTO TIMELINE GLOBALE</span>
-          <span class="text-zinc-400 text-xs font-mono">STEP TOTALI: <b id="lblTotalSongSteps" class="text-amber-400">0</b></span>
-        </div>
-        <div id="dawTimelineTrack" class="flex-1 app-panel border rounded p-2.5 flex items-center gap-2.5 overflow-x-auto relative min-h-0"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL: SETTINGS & THEME CUSTOMIZER -->
-  <div id="modalSettings" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="app-panel border rounded-lg w-[640px] max-w-[95vw] p-4 flex flex-col gap-3 shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b app-border pb-2">
-        <h3 class="text-sm font-black text-amber-500 uppercase tracking-wider">Impostazioni & Personalizzazione Temi</h3>
-        <button id="btnCloseSettings" class="touch-btn text-zinc-400 hover:text-white text-base">✕</button>
-      </div>
-
-      <div class="app-card border rounded p-2.5">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-xs font-black text-amber-400 uppercase">Dispositivi MIDI Rilevati:</span>
-          <button id="btnTestNts1" class="touch-btn px-3 py-1.5 rounded bg-amber-500 text-black text-xs font-black shadow glow-accent">
-            ⚡ TEST INVIO NOTE NTS-1
-          </button>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-2 text-[11px]">
-          <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT:</span>
-            <select id="selMidiOut" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
-              <option value="ALL">TUTTE LE PORTE (Broadcast Multi-Synth)</option>
-            </select>
-          </div>
-          <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI IN:</span>
-            <select id="selMidiIn" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
-              <option value="ALL">RICEVI DA TUTTE LE PORTE</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mt-2 text-[11px] text-zinc-300 flex items-center justify-between border-t app-border pt-1.5">
-          <div>Stato Web MIDI: <b id="lblUsbMidiStatus" class="text-emerald-400 font-mono">Inizializzazione</b></div>
-          <button id="btnRescanMidi" class="touch-btn px-2.5 py-1 app-btn border rounded text-amber-400 font-black text-xs">
-            ↻ RICHIEDI PERMESSI USB
-          </button>
-        </div>
-      </div>
-
-      <div>
-        <label class="text-[11px] font-black text-zinc-400 uppercase block mb-1">Preset Temi:</label>
-        <div class="grid grid-cols-5 gap-1.5">
-          <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="dark">Cyber Dark</button>
-          <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="ableton">Ableton</button>
-          <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="fl">FL Orange</button>
-          <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="acid">Acid Neon</button>
-          <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="blue">Deep Blue</button>
-        </div>
-      </div>
-
-      <div class="app-card border rounded p-2.5">
-        <span class="text-xs font-black text-amber-400 uppercase block mb-2">Personalizza Colori Tema Live:</span>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
-            <span>Sfondo Principale:</span>
-            <input type="color" id="thmBgMain" value="#0a0b10" class="w-6 h-6 cursor-pointer bg-transparent border-0">
-          </label>
-          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
-            <span>Sfondo Pannelli:</span>
-            <input type="color" id="thmBgPanel" value="#12141f" class="w-6 h-6 cursor-pointer bg-transparent border-0">
-          </label>
-          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
-            <span>Sfondo Schede:</span>
-            <input type="color" id="thmBgCard" value="#181b2a" class="w-6 h-6 cursor-pointer bg-transparent border-0">
-          </label>
-          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
-            <span>Colore Bordi:</span>
-            <input type="color" id="thmBorder" value="#262c44" class="w-6 h-6 cursor-pointer bg-transparent border-0">
-          </label>
-          <label class="flex items-center justify-between p-1.5 app-btn border rounded col-span-2">
-            <span class="font-bold">Colore Evidenziazione / Accento:</span>
-            <input type="color" id="thmAccent" value="#f59e0b" class="w-6 h-6 cursor-pointer bg-transparent border-0">
-          </label>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t app-border flex justify-end">
-        <button id="btnSaveSettings" class="touch-btn px-4 py-1.5 rounded app-btn-accent text-xs">CHIUDI & APPLICA</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="fixed bottom-3 right-3 app-panel border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
+  <div id="toast" class="fixed bottom-3 right-3 app-panel border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none opacity-0 transition-opacity duration-200 z-50"></div>
 
   <!-- JAVASCRIPT ENGINE -->
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
-      });
-    }
-
-    const HARDWARE_DEFAULTS = [
-      { name: "Korg NTS-1", ch: 1, type: "synth", note: 60, grp: "FREE", color: "#f59e0b", clockOnly: false },
-      { name: "Waldorf Rocket", ch: 2, type: "synth", note: 60, grp: "FREE", color: "#38bdf8", clockOnly: false },
-      { name: "KO-II Kick", ch: 3, type: "drum", note: 36, grp: "G1", color: "#f97316", clockOnly: false },
-      { name: "KO-II Snare", ch: 4, type: "drum", note: 38, grp: "G1", color: "#eab308", clockOnly: false },
-      { name: "KO-II Hats", ch: 5, type: "drum", note: 42, grp: "G1", color: "#84cc16", clockOnly: false },
-      { name: "KO-II Percs", ch: 6, type: "drum", note: 46, grp: "G1", color: "#10b981", clockOnly: false },
-      { name: "PRO-1 Bass", ch: 7, type: "synth", note: 48, grp: "FREE", color: "#22c55e", clockOnly: false },
-      { name: "MicroFreak", ch: 8, type: "synth", note: 60, grp: "FREE", color: "#a855f7", clockOnly: false },
-      { name: "Electribe 2", ch: 9, type: "synth", note: 60, grp: "FREE", color: "#ec4899", clockOnly: false },
-      { name: "MIDI CH 10", ch: 10, type: "drum", note: 36, grp: "FREE", color: "#06b6d4", clockOnly: false },
-      { name: "MIDI CH 11", ch: 11, type: "synth", note: 60, grp: "FREE", color: "#14b8a6", clockOnly: false },
-      { name: "MIDI CH 12", ch: 12, type: "synth", note: 60, grp: "FREE", color: "#6366f1", clockOnly: false },
-      { name: "MIDI CH 13", ch: 13, type: "synth", note: 60, grp: "FREE", color: "#d946ef", clockOnly: false },
-      { name: "MIDI CH 14", ch: 14, type: "synth", note: 60, grp: "FREE", color: "#f43f5e", clockOnly: false },
-      { name: "MIDI CH 15", ch: 15, type: "synth", note: 60, grp: "FREE", color: "#fb923c", clockOnly: false },
-      { name: "MIDI CH 16", ch: 16, type: "synth", note: 60, grp: "FREE", color: "#e11d48", clockOnly: false },
+    const INITIAL_TRACKS = [
+      { name: "Korg NTS-1", ch: 1, type: "synth", note: 60, grp: "FREE", color: "#f59e0b", clockOnly: false, transpose: 0, vol: 100, pan: 64, sendNotes: true, sendClock: true, sendCC: true },
+      { name: "Waldorf Rocket", ch: 2, type: "synth", note: 60, grp: "FREE", color: "#38bdf8", clockOnly: false, transpose: 0, vol: 100, pan: 64, sendNotes: true, sendClock: true, sendCC: true },
+      { name: "TE KO-II", ch: 3, type: "drum", note: 36, grp: "FREE", color: "#f97316", clockOnly: true, transpose: 0, vol: 100, pan: 64, sendNotes: false, sendClock: true, sendCC: false },
     ];
 
     const DRUM_MAP_NAMES = {
       36: "BD Kick", 37: "Side Stick", 38: "SD Snare", 39: "Clap",
-      40: "Snare Tight", 41: "Low Tom", 42: "Closed Hat", 43: "Low Tom 2",
-      44: "Pedal Hat", 45: "Mid Tom", 46: "Open Hat", 47: "Mid Tom 2",
-      48: "High Tom", 49: "Crash Cymbal", 50: "High Tom 2", 51: "Ride Cymbal"
-    };
-
-    let project = {
-      bpm: 126,
-      isPlaying: false,
-      activePattern: 0,
-      selectedTrackIndex: 0,
-      songMode: false,
-      quantizeBar: true,
-      snapEnabled: true,
-      noteGateRatio: 0.90,
-      internalAudioEnabled: false,
-      zoomBars: 64,
-      chain: [
-        { pat: 0, loops: 2 },
-        { pat: 1, loops: 2 }
-      ],
-      currentChainIndex: 0,
-      currentChainLoop: 1,
-      patterns: []
-    };
-
-    function createNewPatternObject(id, name, steps = 64, color = "#f59e0b") {
-      let patTracks = [];
-      for (let t = 0; t < 16; t++) {
-        patTracks.push({
-          name: HARDWARE_DEFAULTS[t].name,
-          ch: HARDWARE_DEFAULTS[t].ch,
-          type: HARDWARE_DEFAULTS[t].type,
-          group: HARDWARE_DEFAULTS[t].grp,
-          color: HARDWARE_DEFAULTS[t].color,
-          clockOnly: HARDWARE_DEFAULTS[t].clockOnly,
-          mute: false,
-          solo: false,
-          notes: []
-        });
-      }
-      return { id, name, steps, color, tracks: patTracks };
-    }
-
-    project.patterns.push(createNewPatternObject(0, "A - NTS1 & Beats", 64, "#f59e0b"));
-    project.patterns.push(createNewPatternObject(1, "B - Main Drop", 64, "#38bdf8"));
-    project.patterns.push(createNewPatternObject(2, "C - Breakdown", 32, "#22c55e"));
-    project.patterns.push(createNewPatternObject(3, "D - Outro", 64, "#ec4899"));
-
-    for (let s = 0; s < 64; s += 8) project.patterns[0].tracks[0].notes.push({ step: s, note: 60, len: 4, vel: 110 });
-    for (let s = 4; s < 64; s += 8) project.patterns[0].tracks[0].notes.push({ step: s, note: 67, len: 3, vel: 115 });
-    for (let s = 0; s < 64; s += 4) project.patterns[0].tracks[1].notes.push({ step: s, note: 48, len: 2, vel: 105 });
-
-    let audioCtx = null;
-    let midiAccess = null;
-    let currentStep = 0;
-    let sequencerTimer = null;
-    let clockPulseTimer = null;
-    let midiLedTimer = null;
-    let activeVoices = new Map();
-
-    let clipboardNotes = [];
-    let undoStack = [];
-    let redoStack = [];
-
-    function pushHistoryState() {
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-      const snapshot = JSON.stringify(curTrk.notes);
-      undoStack.push(snapshot);
-      if (undoStack.length > 50) undoStack.shift();
-      redoStack = [];
-    }
-
-    function applyUndo() {
-      if (undoStack.length === 0) {
-        showToast("Nessuna azione da annullare");
-        return;
-      }
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-      redoStack.push(JSON.stringify(curTrk.notes));
-      const prev = undoStack.pop();
-      curTrk.notes = JSON.parse(prev);
-      selectedNotes = [];
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      showToast("Azione Annullata (Undo)");
-    }
-
-    function applyRedo() {
-      if (redoStack.length === 0) {
-        showToast("Nessuna azione da ripristinare");
-        return;
-      }
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-      undoStack.push(JSON.stringify(curTrk.notes));
-      const nxt = redoStack.pop();
-      curTrk.notes = JSON.parse(nxt);
-      selectedNotes = [];
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      showToast("Azione Ripristinata (Redo)");
-    }
-
-    function copyNotes() {
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-      const targets = selectedNotes.length > 0 ? selectedNotes : curTrk.notes;
-
-      if (!targets || targets.length === 0) {
-        showToast("Nessuna nota selezionata da copiare");
-        return;
-      }
-
-      let minStep = Infinity;
-      targets.forEach(n => { if (n.step < minStep) minStep = n.step; });
-
-      clipboardNotes = targets.map(n => ({
-        relStep: n.step - minStep,
-        note: n.note,
-        len: n.len,
-        vel: n.vel
-      }));
-
-      showToast(`Copiate ${clipboardNotes.length} note`);
-    }
-
-    function pasteNotes() {
-      if (!clipboardNotes || clipboardNotes.length === 0) {
-        showToast("Appunti vuoti. Copia prima le note");
-        return;
-      }
-
-      pushHistoryState();
-
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-
-      const pasteBaseStep = project.isPlaying ? currentStep : 0;
-      let newSelected = [];
-
-      clipboardNotes.forEach(item => {
-        const targetStep = pasteBaseStep + item.relStep;
-        if (targetStep < curPat.steps) {
-          const newNote = {
-            step: targetStep,
-            note: item.note,
-            len: item.len,
-            vel: item.vel
-          };
-          curTrk.notes.push(newNote);
-          newSelected.push(newNote);
-        }
-      });
-
-      selectedNotes = newSelected;
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      showToast(`Incollate ${newSelected.length} note (selezionate e pronte al drag)`);
-    }
-
-    function duplicateNotes() {
-      const curPat = project.patterns[project.activePattern];
-      const curTrk = curPat.tracks[project.selectedTrackIndex];
-      const targets = selectedNotes.length > 0 ? selectedNotes : curTrk.notes;
-      if (!targets || targets.length === 0) {
-        showToast("Nessuna nota da duplicare");
-        return;
-      }
-
-      pushHistoryState();
-
-      let minStep = Infinity;
-      let maxStep = -Infinity;
-      targets.forEach(n => {
-        if (n.step < minStep) minStep = n.step;
-        if (n.step + n.len > maxStep) maxStep = n.step + n.len;
-      });
-
-      const shift = Math.max(16, maxStep - minStep);
-      let newSelected = [];
-
-      targets.forEach(n => {
-        const newStep = n.step + shift;
-        if (newStep < curPat.steps) {
-          const dup = { step: newStep, note: n.note, len: n.len, vel: n.vel };
-          curTrk.notes.push(dup);
-          newSelected.push(dup);
-        }
-      });
-
-      selectedNotes = newSelected;
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      showToast(`Duplicate ${newSelected.length} note`);
-    }
-
-    const channelMeterTimers = new Map();
-
-    function triggerChannelMeter(trackIdx, velocity = 100) {
-      const bar = document.getElementById(`trkMeterBar-${trackIdx}`);
-      const led = document.getElementById(`trkMeterLed-${trackIdx}`);
-      if (!bar && !led) return;
-
-      const pct = Math.max(25, Math.min(100, Math.round((velocity / 127) * 100)));
-
-      if (bar) {
-        bar.style.width = `${pct}%`;
-        bar.className = 'trk-meter-bar h-full rounded-sm bg-gradient-to-r from-emerald-500 to-amber-400';
-      }
-      if (led) {
-        led.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] transition-colors';
-      }
-
-      if (channelMeterTimers.has(trackIdx)) {
-        clearTimeout(channelMeterTimers.get(trackIdx));
-      }
-
-      const tId = setTimeout(() => {
-        if (bar) bar.style.width = '0%';
-        if (led) {
-          const pat = project.patterns[project.activePattern];
-          const trk = pat.tracks[trackIdx];
-          led.className = `w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-zinc-700'}`;
-        }
-      }, 140);
-
-      channelMeterTimers.set(trackIdx, tId);
-    }
-
-    function flashMidiLed() {
-      const led = document.getElementById('midiActivityLed');
-      if (!led) return;
-      led.classList.remove('bg-zinc-700');
-      led.classList.add('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
-      clearTimeout(midiLedTimer);
-      midiLedTimer = setTimeout(() => {
-        led.classList.remove('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
-        led.classList.add('bg-zinc-700');
-      }, 45);
-    }
-
-    function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
-    }
-
-    function playInternalSound(type, note, vel, durationSec) {
-      if (!project.internalAudioEnabled) return;
-      try {
-        const ctx = getAudioContext();
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime((vel / 127) * 0.35, ctx.currentTime);
-
-        if (type === 'drum' && note === 36) {
-          const osc = ctx.createOscillator();
-          osc.frequency.setValueAtTime(140, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.8, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
-          return;
-        }
-
-        const osc = ctx.createOscillator();
-        const filter = ctx.createBiquadFilter();
-        osc.type = 'sawtooth';
-        const freq = 440 * Math.pow(2, (note - 69) / 12);
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(2400, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + Math.max(0.1, durationSec));
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + Math.max(0.1, durationSec) + 0.05);
-      } catch (err) {}
-    }
-
-    function ensureMidiReady(callback) {
-      if (midiAccess && midiAccess.outputs.size > 0) {
-        if (callback) callback();
-        return;
-      }
-      if (navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess({ sysex: false }).then(m => {
-          midiAccess = m;
-          updateMidiPortSelectors();
-          m.onstatechange = updateMidiPortSelectors;
-          
-          const portCount = m.outputs.size;
-          const lbl = document.getElementById('lblDirectMidiStatus');
-          lbl.textContent = portCount > 0 ? `USB: ${portCount} Dispositivi Attivi` : "Nessun dispositivo USB";
-          lbl.className = portCount > 0 ? "text-emerald-400 font-bold" : "text-amber-400";
-          document.getElementById('lblUsbMidiStatus').textContent = portCount > 0 ? `${portCount} Porte Agganciate` : "In attesa di cavo USB";
-          
-          showToast(portCount > 0 ? `Connessi ${portCount} dispositivi USB` : "Nessuna porta MIDI USB rilevata");
-          if (callback) callback();
-        }).catch(() => {
-          document.getElementById('lblUsbMidiStatus').textContent = "Permesso USB negato";
-          showToast("Consenti l'accesso MIDI nel popup");
-        });
-      } else {
-        showToast("Web MIDI non supportato");
-      }
-    }
-
-    function sendMidiNoteOn(channel, note, velocity) {
-      if (!midiAccess || midiAccess.outputs.size === 0) return;
-
-      const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
-      const vel = Math.max(1, Math.min(127, velocity || 100));
-      const noteByte = note & 0x7F;
-      const key = `${channel}_${note}`;
-
-      if (activeVoices.has(key)) {
-        clearTimeout(activeVoices.get(key));
-        sendMidiNoteOff(channel, note);
-      }
-
-      const sel = document.getElementById('selMidiOut').value;
-      const data = new Uint8Array([0x90 | ch, noteByte, vel]);
-
-      if (sel === 'ALL' || sel === 'AUTO') {
-        midiAccess.outputs.forEach(port => {
-          try { port.send(data); } catch (err) {}
-        });
-      } else if (midiAccess.outputs.has(sel)) {
-        try { midiAccess.outputs.get(sel).send(data); } catch (err) {}
-      }
-
-      activeVoices.set(key, null);
-      flashMidiLed();
-    }
-
-    function sendMidiNoteOff(channel, note) {
-      if (!midiAccess || midiAccess.outputs.size === 0) return;
-
-      const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
-      const noteByte = note & 0x7F;
-      const key = `${channel}_${note}`;
-
-      activeVoices.delete(key);
-
-      const sel = document.getElementById('selMidiOut').value;
-      const data = new Uint8Array([0x90 | ch, noteByte, 0x00]);
-
-      if (sel === 'ALL' || sel === 'AUTO') {
-        midiAccess.outputs.forEach(port => {
-          try { port.send(data); } catch (err) {}
-        });
-      } else if (midiAccess.outputs.has(sel)) {
-        try { midiAccess.outputs.get(sel).send(data); } catch (err) {}
-      }
-    }
-
-    function sendMidiRealTimeClock(byte) {
-      if (!midiAccess || midiAccess.outputs.size === 0) return;
-      const data = new Uint8Array([byte]);
-      midiAccess.outputs.forEach(port => {
-        try { port.send(data); } catch (err) {}
-      });
-    }
-
-    function sendMidiPanic() {
-      if (!midiAccess) return;
-      activeVoices.forEach((timerId) => {
-        if (timerId) clearTimeout(timerId);
-      });
-      activeVoices.clear();
-
-      midiAccess.outputs.forEach(target => {
-        for (let ch = 0; ch < 16; ch++) {
-          try {
-            target.send(new Uint8Array([0xB0 | ch, 123, 0]));
-            target.send(new Uint8Array([0xB0 | ch, 120, 0]));
-          } catch (e) {}
-        }
-      });
-      showToast("MIDI Panic inviato su tutte le porte");
-    }
-
-    function updateMidiPortSelectors() {
-      if (!midiAccess) return;
-      const selOut = document.getElementById('selMidiOut');
-      const selIn = document.getElementById('selMidiIn');
-      if (!selOut || !selIn) return;
-
-      const curOut = selOut.value;
-      const curIn = selIn.value;
-
-      selOut.innerHTML = '<option value="ALL">TUTTE LE PORTE (Broadcast Multi-Synth)</option>';
-      selIn.innerHTML = '<option value="ALL">RICEVI DA TUTTE LE PORTE</option>';
-
-      midiAccess.outputs.forEach(port => {
-        const opt = document.createElement('option');
-        opt.value = port.id;
-        opt.textContent = `${port.name} (${port.manufacturer || 'USB MIDI'})`;
-        selOut.appendChild(opt);
-      });
-      if (curOut && Array.from(selOut.options).some(o => o.value === curOut)) selOut.value = curOut;
-
-      midiAccess.inputs.forEach(port => {
-        const opt = document.createElement('option');
-        opt.value = port.id;
-        opt.textContent = `${port.name} (${port.manufacturer || 'USB MIDI'})`;
-        selIn.appendChild(opt);
-        port.onmidimessage = handleIncomingMidi;
-      });
-      if (curIn && Array.from(selIn.options).some(o => o.value === curIn)) selIn.value = curIn;
-
-      const count = midiAccess.outputs.size;
-      const lbl = document.getElementById('lblDirectMidiStatus');
-      if (count > 0) {
-        lbl.textContent = `USB: ${count} Dispositivi Attivi`;
-        lbl.className = "text-emerald-400 font-bold";
-      }
-    }
-
-    function handleIncomingMidi(event) {
-      const targetTrackIdx = project.selectedTrackIndex;
-      const targetChannel = project.patterns[project.activePattern].tracks[targetTrackIdx].ch;
-      const status = event.data[0] & 0xF0;
-      const note = event.data[1];
-      const vel = event.data[2];
-
-      if (status === 0x90 && vel > 0) {
-        sendMidiNoteOn(targetChannel, note, vel);
-        triggerChannelMeter(targetTrackIdx, vel);
-      } else if (status === 0x80 || (status === 0x90 && vel === 0)) {
-        sendMidiNoteOff(targetChannel, note);
-      }
-    }
-
-    function stepSequencerTick() {
-      const currentPat = project.patterns[project.activePattern];
-      if (!currentPat) return;
-
-      const stepDurationSec = (60 / project.bpm) / 4;
-      const hasSolo = currentPat.tracks.some(t => t.solo);
-      const gateRatio = project.noteGateRatio || 0.90;
-
-      for (let t = 0; t < 16; t++) {
-        const trk = currentPat.tracks[t];
-        if (trk.mute || (hasSolo && !trk.solo)) continue;
-
-        if (trk.clockOnly) {
-          triggerChannelMeter(t, 100);
-          continue;
-        }
-
-        const targetChannel = trk.ch || (t + 1);
-
-        for (let n of trk.notes) {
-          if (Math.floor(n.step) === currentStep) {
-            const totalDurSec = n.len * stepDurationSec;
-            const gateDurSec = totalDurSec * gateRatio;
-
-            playInternalSound(trk.type, n.note, n.vel, gateDurSec);
-            sendMidiNoteOn(targetChannel, n.note, n.vel);
-            triggerChannelMeter(t, n.vel);
-
-            const key = `${targetChannel}_${n.note}`;
-            const tId = setTimeout(() => {
-              sendMidiNoteOff(targetChannel, n.note);
-            }, gateDurSec * 1000);
-
-            activeVoices.set(key, tId);
-          }
-        }
-      }
-
-      currentStep++;
-      if (currentStep >= currentPat.steps) {
-        currentStep = 0;
-        if (project.songMode && project.chain.length > 0) {
-          project.currentChainLoop++;
-          const curSlot = project.chain[project.currentChainIndex];
-          if (project.currentChainLoop > curSlot.loops) {
-            project.currentChainLoop = 1;
-            project.currentChainIndex = (project.currentChainIndex + 1) % project.chain.length;
-            project.activePattern = project.chain[project.currentChainIndex].pat;
-            renderChainSlots();
-          }
-        }
-      }
-
-      if (activeView === 'editor') {
-        drawPianoRoll();
-        if (velocityVisible) drawVelocityLane();
-      }
-      if (activeView === 'chainer') updateChainerPlayhead();
-    }
-
-    function startPlayback() {
-      ensureMidiReady(() => {
-        if (project.isPlaying) return;
-        if (project.internalAudioEnabled) getAudioContext();
-        project.isPlaying = true;
-        document.getElementById('btnPlay').classList.add('bg-emerald-500', 'glow-accent');
-
-        sendMidiRealTimeClock(0xFA);
-
-        const stepIntervalMs = (60000 / project.bpm) / 4;
-        sequencerTimer = setInterval(stepSequencerTick, stepIntervalMs);
-
-        const clockIntervalMs = (60000 / project.bpm) / 24;
-        clockPulseTimer = setInterval(() => {
-          sendMidiRealTimeClock(0xF8);
-        }, clockIntervalMs);
-      });
-    }
-
-    function stopPlayback() {
-      project.isPlaying = false;
-      clearInterval(sequencerTimer);
-      clearInterval(clockPulseTimer);
-      currentStep = 0;
-      document.getElementById('btnPlay').classList.remove('bg-emerald-500', 'glow-accent');
-
-      sendMidiRealTimeClock(0xFC);
-      sendMidiPanic();
-
-      if (activeView === 'editor') {
-        drawPianoRoll();
-        if (velocityVisible) drawVelocityLane();
-      }
-      if (activeView === 'chainer') updateChainerPlayhead();
-    }
-
-    // ==========================================
-    // LOGICA MUTE, SOLO & CLOCK ONLY
-    // ==========================================
-    function toggleTrackMuteWithGroup(trackIdx) {
-      const pat = project.patterns[project.activePattern];
-      const target = pat.tracks[trackIdx];
-      const newMuteState = !target.mute;
-
-      if (target.group && target.group !== 'FREE') {
-        pat.tracks.forEach(t => {
-          if (t.group === target.group) t.mute = newMuteState;
-        });
-        showToast(`Gruppo [${target.group}]: ${newMuteState ? 'MUTATO' : 'UNMUTATO'}`);
-      } else {
-        target.mute = newMuteState;
-      }
-
-      renderTracksGrid();
-      renderEditorTrackRail();
-    }
-
-    function toggleTrackSoloWithGroup(trackIdx) {
-      const pat = project.patterns[project.activePattern];
-      const target = pat.tracks[trackIdx];
-      const newSoloState = !target.solo;
-
-      if (target.group && target.group !== 'FREE') {
-        pat.tracks.forEach(t => {
-          if (t.group === target.group) t.solo = newSoloState;
-        });
-        showToast(`Gruppo [${target.group}]: SOLO ${newSoloState ? 'ON' : 'OFF'}`);
-      } else {
-        target.solo = newSoloState;
-      }
-
-      renderTracksGrid();
-      renderEditorTrackRail();
-      updateEditorSoloState();
-    }
-
-    function toggleClockOnly(trackIdx) {
-      const trk = project.patterns[project.activePattern].tracks[trackIdx];
-      trk.clockOnly = !trk.clockOnly;
-      project.patterns.forEach(p => p.tracks[trackIdx].clockOnly = trk.clockOnly);
-
-      renderTracksGrid();
-      renderEditorTrackRail();
-      updateEditorClockOnlyState();
-      showToast(`${trk.name}: CLOCK ONLY ${trk.clockOnly ? 'ATTIVO' : 'DISATTIVO'}`);
-    }
-
-    function updateEditorClockOnlyState() {
-      const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
-      const btn = document.getElementById('btnEdClockOnlyToggle');
-      const lbl = document.getElementById('lblEdClockOnly');
-      if (trk.clockOnly) {
-        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border bg-cyan-700 border-cyan-400 text-cyan-200 shadow flex items-center gap-1 shrink-0';
-        lbl.textContent = 'CLOCK ONLY ON';
-      } else {
-        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0';
-        lbl.textContent = 'CLOCK ONLY';
-      }
-    }
-
-    function renderTracksGrid() {
-      const container = document.getElementById('tracksGrid');
-      if (!container) return;
-      container.innerHTML = '';
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-
-      const groupColors = {
-        'FREE': 'text-zinc-400 border-zinc-600',
-        'G1': 'text-amber-400 border-amber-500/60',
-        'G2': 'text-cyan-400 border-cyan-500/60',
-        'G3': 'text-emerald-400 border-emerald-500/60',
-        'G4': 'text-pink-400 border-pink-500/60',
-        'G5': 'text-purple-400 border-purple-500/60'
-      };
-
-      pat.tracks.forEach((trk, idx) => {
-        const card = document.createElement('div');
-        const isSelected = project.selectedTrackIndex === idx;
-        const grpStyle = groupColors[trk.group] || 'text-zinc-400 border-zinc-600';
-
-        card.className = `app-card border-2 ${isSelected ? 'border-amber-400 shadow-lg' : 'app-border'} rounded-lg p-2.5 flex flex-col justify-between relative shadow-md`;
-
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center justify-between gap-1">
-              <div class="flex items-center gap-1.5 overflow-hidden flex-1">
-                <span id="trkMeterLed-${idx}" class="w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-zinc-700'}"></span>
-                <span class="font-black text-xs truncate text-zinc-100">${idx + 1}. ${trk.name}</span>
-              </div>
-              <div class="flex items-center gap-1">
-                <button class="btn-mixer-clock touch-btn text-[9px] font-mono font-bold px-1 py-0.2 rounded border ${
-                  trk.clockOnly ? 'bg-cyan-600 text-white border-cyan-400' : 'app-btn text-zinc-400'
-                }" data-idx="${idx}" title="Attiva modalità Solo Clock">
-                  ${trk.clockOnly ? '⏱ CLOCK' : 'NOTES'}
-                </button>
-                <span class="text-[10px] font-mono font-black app-btn border px-1.5 py-0.5 rounded text-amber-400">CH ${trk.ch}</span>
-              </div>
-            </div>
-
-            <div class="w-full h-1.5 bg-black/60 rounded-full overflow-hidden mt-1.5 border border-zinc-800">
-              <div id="trkMeterBar-${idx}" class="trk-meter-bar h-full w-0 rounded-full"></div>
-            </div>
-          </div>
-
-          <div class="my-2">
-            <div class="flex justify-between items-center text-[9px] font-black uppercase text-zinc-400 mb-1">
-              <span>Raggruppamento:</span>
-              <span class="font-bold ${grpStyle}">${trk.group}</span>
-            </div>
-            <div class="grid grid-cols-6 gap-1">
-              ${['FREE', 'G1', 'G2', 'G3', 'G4', 'G5'].map(g => `
-                <button class="grp-select-btn touch-btn py-1 rounded text-[10px] font-black border ${
-                  trk.group === g ? 'bg-amber-500 text-black border-amber-400 shadow font-extrabold' : 'app-btn border-zinc-700 text-zinc-300 hover:text-white'
-                }" data-idx="${idx}" data-grp="${g}">
-                  ${g}
-                </button>
-              `).join('')}
-            </div>
-          </div>
-
-          <div class="flex items-center gap-1.5 pt-1 border-t app-border">
-            <button class="btn-mixer-mute touch-btn flex-1 py-1.5 rounded text-xs font-black border transition-all ${
-              trk.mute ? 'bg-rose-950 border-rose-600 text-rose-300 shadow' : 'app-btn text-zinc-300'
-            }" data-idx="${idx}">
-              ${trk.mute ? 'MUTED' : 'MUTE'}
-            </button>
-            <button class="btn-mixer-solo touch-btn flex-1 py-1.5 rounded text-xs font-black border transition-all ${
-              trk.solo ? 'app-btn-accent glow-accent shadow' : 'app-btn text-zinc-300'
-            }" data-idx="${idx}">
-              ${trk.solo ? 'SOLO ON' : 'SOLO'}
-            </button>
-            <button class="btn-mixer-edit touch-btn px-3 py-1.5 rounded text-xs font-black bg-zinc-700 hover:bg-zinc-600 text-white" data-idx="${idx}" title="Apri nel Piano Roll">
-              EDIT
-            </button>
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-
-      container.querySelectorAll('.grp-select-btn').forEach(b => {
-        b.onclick = () => {
-          const idx = parseInt(b.dataset.idx);
-          const grp = b.dataset.grp;
-          pat.tracks[idx].group = grp;
-          renderTracksGrid();
-          showToast(`Traccia ${idx + 1} assegnata a [${grp}]`);
-        };
-      });
-
-      container.querySelectorAll('.btn-mixer-clock').forEach(b => {
-        b.onclick = () => toggleClockOnly(parseInt(b.dataset.idx));
-      });
-
-      container.querySelectorAll('.btn-mixer-mute').forEach(b => {
-        b.onclick = () => toggleTrackMuteWithGroup(parseInt(b.dataset.idx));
-      });
-      container.querySelectorAll('.btn-mixer-solo').forEach(b => {
-        b.onclick = () => toggleTrackSoloWithGroup(parseInt(b.dataset.idx));
-      });
-
-      container.querySelectorAll('.btn-mixer-edit').forEach(b => {
-        b.onclick = () => {
-          project.selectedTrackIndex = parseInt(b.dataset.idx);
-          switchView('editor');
-        };
-      });
-    }
-
-    // ==========================================
-    // PIANO ROLL & TOUCH / WHEEL SCROLL & GROUP DRAG
-    // ==========================================
-    const canvas = document.getElementById('dawCanvas');
-    const ctx = canvas.getContext('2d');
-    const velCanvas = document.getElementById('velocityCanvas');
-    const velCtx = velCanvas.getContext('2d');
-
-    let currentTool = 'draw';
-    let octaveOffset = 48;
-    let isDraggingKeys = false;
-    let dragStartY = 0;
-
-    let activeDrawingNote = null;
-    let selectedNotes = [];
-
-    let isBoxSelecting = false;
-    let boxSelectStart = { x: 0, y: 0 };
-    let boxSelectCurrent = { x: 0, y: 0 };
-
-    let dragOperation = null; // 'move-group' | 'resize-left' | 'resize-right' | null
-    let dragTargetNote = null;
-    let dragStartPointerStep = 0;
-    let dragStartPointerNote = 0;
-    let groupSnapshots = [];
-
-    let velocityVisible = false;
-    let isDraggingVelocity = false;
-
-    const midiChSelect = document.getElementById('edTrackMidiChSelect');
-    for (let c = 1; c <= 16; c++) {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = `CH ${c}`;
-      midiChSelect.appendChild(opt);
-    }
-
-    function syncEditorHeaderValues() {
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      document.getElementById('edTrackNameInput').value = trk.name;
-      document.getElementById('edTrackMidiChSelect').value = trk.ch;
-      document.getElementById('edTrackTypeSelect').value = trk.type;
-      document.getElementById('edTrackColorPicker').value = trk.color || '#f59e0b';
-      document.getElementById('inputPatSteps').value = pat.steps || 64;
-      updateEditorClockOnlyState();
-    }
-
-    document.getElementById('selNoteGate').onchange = (e) => {
-      project.noteGateRatio = parseFloat(e.target.value) || 0.90;
-      showToast(`Gate: ${Math.round(project.noteGateRatio * 100)}%`);
-    };
-
-    function setPatternSteps(steps) {
-      const val = Math.max(1, Math.min(128, parseInt(steps) || 64));
-      const pat = project.patterns[project.activePattern];
-      pat.steps = val;
-      document.getElementById('inputPatSteps').value = val;
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      renderDawTimeline();
-      showToast(`Durata: ${val} step`);
-    }
-
-    document.getElementById('inputPatSteps').onchange = (e) => setPatternSteps(e.target.value);
-    document.getElementById('btnPatStepInc').onclick = () => {
-      const pat = project.patterns[project.activePattern];
-      setPatternSteps((pat.steps || 64) + 1);
-    };
-    document.getElementById('btnPatStepDec').onclick = () => {
-      const pat = project.patterns[project.activePattern];
-      setPatternSteps((pat.steps || 64) - 1);
-    };
-    document.querySelectorAll('.btn-step-preset').forEach(b => {
-      b.onclick = () => setPatternSteps(b.dataset.steps);
-    });
-
-    document.getElementById('edTrackNameInput').onchange = (e) => {
-      const newName = e.target.value.trim() || `Traccia ${project.selectedTrackIndex + 1}`;
-      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].name = newName);
-      renderEditorTrackRail();
-      renderTracksGrid();
-    };
-
-    document.getElementById('edTrackColorPicker').oninput = (e) => {
-      const newColor = e.target.value;
-      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].color = newColor);
-      renderEditorTrackRail();
-      renderTracksGrid();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-    };
-
-    document.getElementById('edTrackMidiChSelect').onchange = (e) => {
-      const newCh = parseInt(e.target.value);
-      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].ch = newCh);
-      renderEditorTrackRail();
-      renderTracksGrid();
-      showToast(`Assegnato a MIDI CH ${newCh}`);
-    };
-
-    document.getElementById('btnEdClockOnlyToggle').onclick = () => {
-      toggleClockOnly(project.selectedTrackIndex);
-    };
-
-    document.getElementById('btnUndo').onclick = applyUndo;
-    document.getElementById('btnRedo').onclick = applyRedo;
-    document.getElementById('btnCopy').onclick = copyNotes;
-    document.getElementById('btnPaste').onclick = pasteNotes;
-    document.getElementById('btnDuplicate').onclick = duplicateNotes;
-
-    window.addEventListener('keydown', (e) => {
-      if (activeView !== 'editor') return;
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-
-      if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); applyUndo(); }
-      if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); applyRedo(); }
-      if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copyNotes(); }
-      if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); pasteNotes(); }
-      if (e.ctrlKey && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateNotes(); }
-    });
-
-    document.getElementById('btnToggleSnap').onclick = () => {
-      project.snapEnabled = !project.snapEnabled;
-      const btn = document.getElementById('btnToggleSnap');
-      const lbl = document.getElementById('lblSnapStatus');
-      if (project.snapEnabled) {
-        btn.className = 'touch-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white';
-        lbl.textContent = 'ON';
-        showToast("Snap ATTIVATO");
-      } else {
-        btn.className = 'touch-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-zinc-700 text-zinc-300';
-        lbl.textContent = 'OFF';
-        showToast("Snap DISATTIVATO");
-      }
-    };
-
-    document.getElementById('btnToggleVelocity').onclick = () => {
-      velocityVisible = !velocityVisible;
-      const velContainer = document.getElementById('velocityContainer');
-      const arrow = document.getElementById('lblVelArrow');
-      if (velocityVisible) {
-        velContainer.classList.remove('hidden');
-        arrow.textContent = '▲';
-      } else {
-        velContainer.classList.add('hidden');
-        arrow.textContent = '▼';
-      }
-      setTimeout(resizeCanvas, 20);
-    };
-
-    function renderEditorTrackRail() {
-      const rail = document.getElementById('edTrackRail');
-      if (!rail) return;
-      rail.innerHTML = '';
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-
-      pat.tracks.forEach((t, i) => {
-        const isSel = project.selectedTrackIndex === i;
-        const card = document.createElement('div');
-        card.className = `w-full p-1.5 rounded text-left border flex flex-col justify-between shrink-0 transition-all ${
-          isSel ? 'app-panel border-amber-400 glow-accent' : 'app-card app-border hover:border-zinc-500'
-        }`;
-
-        card.innerHTML = `
-          <div class="flex justify-between items-center w-full gap-1">
-            <div class="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer btn-select-track">
-              <input type="color" class="track-item-color w-4 h-4 cursor-pointer bg-transparent border-0 rounded shrink-0" value="${t.color || '#f59e0b'}" data-idx="${i}" title="Cambia Colore Traccia">
-              <span class="font-black text-xs truncate ${isSel ? 'text-amber-400' : 'text-zinc-100'}">${i + 1}. ${t.name}</span>
-            </div>
-
-            <div class="flex items-center gap-1">
-              <button class="btn-rail-clock touch-btn text-[9px] font-mono font-bold px-1 py-0.5 rounded border ${
-                t.clockOnly ? 'bg-cyan-600 text-white border-cyan-400' : 'app-btn text-zinc-400'
-              }" data-idx="${i}">
-                ${t.clockOnly ? '⏱ CLK' : 'NOTE'}
-              </button>
-              <button class="btn-quick-ch touch-btn font-mono font-black text-xs px-2 py-0.5 rounded border shadow ${
-                isSel ? 'bg-amber-500 text-black border-amber-400' : 'app-btn border-zinc-600 text-amber-400 hover:border-amber-400'
-              }" data-idx="${i}">
-                CH ${t.ch}
-              </button>
-            </div>
-          </div>
-
-          <div class="flex justify-between items-center text-[9px] mt-1 font-bold text-zinc-400 cursor-pointer btn-select-track">
-            <span>${t.type === 'drum' ? '🥁 DRUM' : '🎹 INST'}</span>
-            <span>GRP: <b class="text-amber-400">${t.group}</b> | NOTE: <b class="text-zinc-200">${t.notes.length}</b></span>
-          </div>
-        `;
-
-        card.querySelectorAll('.btn-select-track').forEach(el => {
-          el.onclick = () => {
-            project.selectedTrackIndex = i;
-            selectedNotes = [];
-            updateSelectionStatus();
-            renderEditorTrackRail();
-            syncEditorHeaderValues();
-            autoCenterPianoRoll();
-            updateEditorSoloState();
-            if (velocityVisible) drawVelocityLane();
-          };
-        });
-
-        const colorInput = card.querySelector('.track-item-color');
-        colorInput.oninput = (e) => {
-          const c = e.target.value;
-          project.patterns.forEach(p => p.tracks[i].color = c);
-          if (project.selectedTrackIndex === i) {
-            document.getElementById('edTrackColorPicker').value = c;
-          }
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        };
-
-        const clkBtn = card.querySelector('.btn-rail-clock');
-        clkBtn.onclick = (e) => {
-          e.stopPropagation();
-          toggleClockOnly(i);
-        };
-
-        const chBtn = card.querySelector('.btn-quick-ch');
-        chBtn.onclick = (e) => {
-          e.stopPropagation();
-          const nextCh = (t.ch % 16) + 1;
-          project.patterns.forEach(p => p.tracks[i].ch = nextCh);
-          chBtn.textContent = `CH ${nextCh}`;
-          if (project.selectedTrackIndex === i) {
-            document.getElementById('edTrackMidiChSelect').value = nextCh;
-          }
-          renderTracksGrid();
-          showToast(`${t.name}: Canale impostato su CH ${nextCh}`);
-        };
-
-        rail.appendChild(card);
-      });
-    }
-
-    function resizeCanvas() {
-      if (!canvas || !canvas.parentElement) return;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width || window.innerWidth;
-      canvas.height = rect.height || 400;
-
-      if (velocityVisible && velCanvas && velCanvas.parentElement) {
-        const vRect = velCanvas.parentElement.getBoundingClientRect();
-        velCanvas.width = vRect.width || canvas.width;
-        velCanvas.height = vRect.height || 80;
-        drawVelocityLane();
-      }
-
-      drawPianoRoll();
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    function getGridSnapStep() {
-      if (!project.snapEnabled) return 0.25;
-      const res = parseInt(document.getElementById('selGridRes').value);
-      if (res === 32) return 0.5;
-      if (res === 16) return 1;
-      if (res === 8) return 2;
-      if (res === 4) return 4;
-      return 1;
-    }
-
-    // STATICO: USA OPACITÀ E POINTER-EVENTS PER NON CAMBIARE MAI LA LARGHEZZA/ALTEZZA DEL MENÙ
-    function updateSelectionStatus() {
-      const btnDel = document.getElementById('btnEdDeleteSelected');
-      const btnDesel = document.getElementById('btnEdDeselectAll');
-      if (selectedNotes.length > 0) {
-        btnDel.classList.remove('opacity-0', 'pointer-events-none');
-        btnDesel.classList.remove('opacity-0', 'pointer-events-none');
-        btnDel.textContent = `DEL (${selectedNotes.length})`;
-      } else {
-        btnDel.classList.add('opacity-0', 'pointer-events-none');
-        btnDesel.classList.add('opacity-0', 'pointer-events-none');
-      }
-    }
-
-    function drawPianoRoll() {
-      if (activeView !== 'editor' || !canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-
-      document.getElementById('lblEditorPatName').textContent = pat.name;
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-
-      const keyWidth = isDrum ? 85 : 55;
-      const visibleSteps = project.zoomBars;
-      const gridWidth = canvas.width - keyWidth;
-      const stepWidth = gridWidth / visibleSteps;
-
-      if (isDrum) {
-        const numPads = 16;
-        const rowHeight = Math.max(22, Math.floor(canvas.height / numPads));
-
-        for (let p = 0; p < numPads; p++) {
-          const padNote = 36 + p;
-          const y = p * rowHeight;
-          const padName = DRUM_MAP_NAMES[padNote] || `Pad ${p + 1}`;
-
-          ctx.fillStyle = (p % 2 === 0) ? '#1f2430' : '#141722';
-          ctx.fillRect(0, y, keyWidth, rowHeight);
-          ctx.strokeStyle = '#2d3345';
-          ctx.strokeRect(0, y, keyWidth, rowHeight);
-
-          ctx.fillStyle = '#f8fafc';
-          ctx.font = '10px sans-serif font-black';
-          ctx.fillText(padName, 6, y + (rowHeight / 2) + 4);
-
-          ctx.fillStyle = (p % 2 === 0) ? 'rgba(18, 20, 30, 0.95)' : 'rgba(12, 14, 22, 0.95)';
-          ctx.fillRect(keyWidth, y, gridWidth, rowHeight);
-          ctx.strokeStyle = '#1e2436';
-          ctx.strokeRect(keyWidth, y, gridWidth, rowHeight);
-        }
-
-        for (let s = 0; s <= visibleSteps; s++) {
-          const x = keyWidth + s * stepWidth;
-          if (x > canvas.width) break;
-          ctx.strokeStyle = (s % 16 === 0) ? '#64748b' : (s % 4 === 0) ? '#334155' : '#1a2233';
-          ctx.lineWidth = (s % 16 === 0) ? 2 : 1;
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvas.height);
-          ctx.stroke();
-        }
-
-        trk.notes.forEach(n => {
-          const padIdx = n.note - 36;
-          if (padIdx >= 0 && padIdx < numPads && n.step < visibleSteps) {
-            const x = keyWidth + n.step * stepWidth;
-            const y = padIdx * rowHeight;
-            const isSelected = selectedNotes.includes(n);
-
-            ctx.fillStyle = isSelected ? '#38bdf8' : (trk.color || '#f97316');
-            ctx.fillRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
-            ctx.strokeStyle = isSelected ? '#ffffff' : '#ea580c';
-            ctx.lineWidth = isSelected ? 2.5 : 1.5;
-            ctx.strokeRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
-
-            ctx.fillStyle = isSelected ? '#000' : '#fff';
-            ctx.font = '9px sans-serif font-black';
-            ctx.fillText(`v${n.vel}`, x + 3, y + (rowHeight / 2) + 3);
-          }
-        });
-
-      } else {
-        const rowHeight = 20;
-        const numRows = Math.floor(canvas.height / rowHeight);
-
-        for (let r = 0; r < numRows; r++) {
-          const noteNumber = octaveOffset + (numRows - 1 - r);
-          const y = r * rowHeight;
-          const isBlackKey = [1, 3, 6, 8, 10].includes(noteNumber % 12);
-
-          ctx.fillStyle = isBlackKey ? 'rgba(12, 14, 20, 0.95)' : 'rgba(20, 24, 34, 0.95)';
-          ctx.fillRect(keyWidth, y, gridWidth, rowHeight);
-          ctx.strokeStyle = '#22283a';
-          ctx.strokeRect(keyWidth, y, gridWidth, rowHeight);
-
-          ctx.fillStyle = isBlackKey ? '#171a24' : '#e2e8f0';
-          ctx.fillRect(0, y, keyWidth, rowHeight);
-          ctx.strokeStyle = '#2d3345';
-          ctx.strokeRect(0, y, keyWidth, rowHeight);
-
-          ctx.fillStyle = isBlackKey ? '#94a3b8' : '#0f172a';
-          ctx.font = '10px monospace font-bold';
-          const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-          ctx.fillText(noteNames[noteNumber % 12] + Math.floor(noteNumber / 12), 6, y + 14);
-        }
-
-        for (let s = 0; s <= visibleSteps; s++) {
-          const x = keyWidth + s * stepWidth;
-          if (x > canvas.width) break;
-          ctx.strokeStyle = (s % 16 === 0) ? '#64748b' : (s % 4 === 0) ? '#334155' : '#1e293b';
-          ctx.lineWidth = (s % 16 === 0) ? 2 : 1;
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvas.height);
-          ctx.stroke();
-        }
-
-        trk.notes.forEach(n => {
-          const rowIndex = numRows - 1 - (n.note - octaveOffset);
-          if (rowIndex >= 0 && rowIndex < numRows && n.step < visibleSteps) {
-            const x = keyWidth + n.step * stepWidth;
-            const y = rowIndex * rowHeight;
-            const w = Math.max(stepWidth * n.len - 2, 8);
-            const isSelected = selectedNotes.includes(n);
-
-            ctx.fillStyle = isSelected ? '#38bdf8' : (trk.color || pat.color || '#f59e0b');
-            ctx.fillRect(x + 1, y + 1, w, rowHeight - 2);
-            ctx.strokeStyle = isSelected ? '#ffffff' : '#00000088';
-            ctx.lineWidth = isSelected ? 2.5 : 1.5;
-            ctx.strokeRect(x + 1, y + 1, w, rowHeight - 2);
-
-            ctx.fillStyle = '#000000';
-            ctx.font = '8px monospace font-black';
-            ctx.fillText('◀', x + 2, y + 13);
-
-            if (w > 18) {
-              ctx.fillText('▶', x + w - 8, y + 13);
-            }
-
-            if (w > 32) {
-              ctx.font = '9px sans-serif font-black';
-              ctx.fillText(`v${n.vel}`, x + 11, y + 13);
-            }
-          }
-        });
-      }
-
-      const patEndStep = pat.steps || 64;
-      if (patEndStep <= visibleSteps) {
-        const endX = keyWidth + patEndStep * stepWidth;
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([6, 4]);
-        ctx.beginPath();
-        ctx.moveTo(endX, 0);
-        ctx.lineTo(endX, canvas.height);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#ef4444';
-        ctx.font = '10px sans-serif font-black';
-        ctx.fillText(`FINE PATTERN (${patEndStep} ST)`, endX + 4, 14);
-      }
-
-      if (isBoxSelecting) {
-        const boxX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
-        const boxY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
-        const boxW = Math.abs(boxSelectCurrent.x - boxSelectStart.x);
-        const boxH = Math.abs(boxSelectCurrent.y - boxSelectStart.y);
-
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 3]);
-        ctx.strokeRect(boxX, boxY, boxW, boxH);
-        ctx.setLineDash([]);
-      }
-
-      if (project.isPlaying) {
-        const stepInZoom = currentStep % visibleSteps;
-        const playX = keyWidth + stepInZoom * stepWidth;
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(playX, 0);
-        ctx.lineTo(playX, canvas.height);
-        ctx.stroke();
-      }
-    }
-
-    function drawVelocityLane() {
-      if (!velocityVisible || !velCanvas) return;
-      velCtx.clearRect(0, 0, velCanvas.width, velCanvas.height);
-
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-      const keyWidth = isDrum ? 85 : 55;
-      const visibleSteps = project.zoomBars;
-      const gridWidth = velCanvas.width - keyWidth;
-      const stepWidth = gridWidth / visibleSteps;
-
-      velCtx.fillStyle = '#10131f';
-      velCtx.fillRect(0, 0, keyWidth, velCanvas.height);
-      velCtx.strokeStyle = '#262c44';
-      velCtx.strokeRect(0, 0, keyWidth, velCanvas.height);
-
-      velCtx.fillStyle = '#94a3b8';
-      velCtx.font = '9px monospace font-bold';
-      velCtx.fillText('127', 10, 14);
-      velCtx.fillText('64', 10, velCanvas.height / 2 + 3);
-      velCtx.fillText('1', 10, velCanvas.height - 4);
-
-      for (let s = 0; s <= visibleSteps; s++) {
-        const x = keyWidth + s * stepWidth;
-        if (x > velCanvas.width) break;
-        velCtx.strokeStyle = (s % 16 === 0) ? '#334155' : '#141824';
-        velCtx.lineWidth = 1;
-        velCtx.beginPath();
-        velCtx.moveTo(x, 0);
-        velCtx.lineTo(x, velCanvas.height);
-        velCtx.stroke();
-      }
-
-      velCtx.strokeStyle = '#1e2638';
-      velCtx.beginPath();
-      velCtx.moveTo(keyWidth, velCanvas.height / 2);
-      velCtx.lineTo(velCanvas.width, velCanvas.height / 2);
-      velCtx.stroke();
-
-      trk.notes.forEach(n => {
-        if (n.step < visibleSteps) {
-          const x = keyWidth + n.step * stepWidth;
-          const barHeight = ((n.vel || 100) / 127) * (velCanvas.height - 6);
-          const y = velCanvas.height - barHeight - 2;
-          const isSelected = selectedNotes.includes(n);
-
-          velCtx.fillStyle = isSelected ? '#38bdf8' : (trk.color || pat.color || '#f59e0b');
-          velCtx.fillRect(x + 2, y, Math.max(stepWidth - 4, 4), barHeight);
-
-          velCtx.fillStyle = '#ffffff';
-          velCtx.fillRect(x + 1, y, Math.max(stepWidth - 2, 6), 3);
-        }
-      });
-    }
-
-    function detectNoteHit(x, y) {
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-      const keyWidth = isDrum ? 85 : 55;
-      const visibleSteps = project.zoomBars;
-      const stepWidth = (canvas.width - keyWidth) / visibleSteps;
-      const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
-      const numRows = Math.floor(canvas.height / rowHeight);
-
-      const HANDLE_SIZE = 12;
-
-      for (let n of trk.notes) {
-        const rowIndex = isDrum ? (n.note - 36) : (numRows - 1 - (n.note - octaveOffset));
-        if (rowIndex < 0 || rowIndex >= numRows) continue;
-
-        const noteX = keyWidth + n.step * stepWidth;
-        const noteY = rowIndex * rowHeight;
-        const noteW = Math.max(stepWidth * (n.len || 1) - 2, 8);
-
-        if (x >= noteX && x <= noteX + noteW && y >= noteY && y <= noteY + rowHeight) {
-          if (!isDrum) {
-            if (x <= noteX + HANDLE_SIZE) return { note: n, part: 'resize-left' };
-            if (x >= noteX + noteW - HANDLE_SIZE) return { note: n, part: 'resize-right' };
-          }
-          return { note: n, part: 'move' };
-        }
-      }
-      return null;
-    }
-
-    // Scroll rotella mouse sopra i tasti
-    canvas.addEventListener('wheel', e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const keyWidth = trk.type === 'drum' ? 85 : 55;
-
-      if (x < keyWidth && trk.type !== 'drum') {
-        e.preventDefault();
-        const direction = e.deltaY > 0 ? -1 : 1;
-        octaveOffset = Math.max(12, Math.min(96, octaveOffset + direction * 2));
-        drawPianoRoll();
-      }
-    }, { passive: false });
-
-    canvas.addEventListener('pointermove', e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const keyWidth = trk.type === 'drum' ? 85 : 55;
-
-      if (x < keyWidth && trk.type !== 'drum') {
-        canvas.style.cursor = 'ns-resize';
-        return;
-      }
-
-      if (!dragOperation && !isDraggingKeys && !isBoxSelecting) {
-        const hit = detectNoteHit(x, y);
-        if (hit) {
-          if (hit.part === 'resize-left' || hit.part === 'resize-right') {
-            canvas.style.cursor = 'ew-resize';
-          } else {
-            canvas.style.cursor = 'grab';
-          }
-        } else {
-          canvas.style.cursor = currentTool === 'select' ? 'default' : currentTool === 'draw' ? 'crosshair' : 'default';
-        }
-      }
-    });
-
-    // POINTERDOWN CON TRASCINAMENTO DI GRUPPO SICURO (SENZA DESELEZIONE)
-    canvas.addEventListener('pointerdown', e => {
-      ensureMidiReady();
-
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-      const keyWidth = isDrum ? 85 : 55;
-
-      // Scroll Touch Tastiera
-      if (x < keyWidth) {
-        if (!isDrum) {
-          isDraggingKeys = true;
-          dragStartY = y;
-          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
-          canvas.style.cursor = 'ns-resize';
-        }
-        return;
-      }
-
-      const visibleSteps = project.zoomBars;
-      const stepWidth = (canvas.width - keyWidth) / visibleSteps;
-      const clickedStepPrecise = (x - keyWidth) / stepWidth;
-      const clickedStep = Math.floor(clickedStepPrecise);
-
-      const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
-      const numRows = Math.floor(canvas.height / rowHeight);
-      const clickedRow = Math.floor(y / rowHeight);
-      const clickedNote = isDrum ? (36 + Math.max(0, Math.min(15, clickedRow))) : (octaveOffset + (numRows - 1 - clickedRow));
-
-      const hit = detectNoteHit(x, y);
-
-      if (hit && (currentTool === 'draw' || currentTool === 'select')) {
-        pushHistoryState();
-
-        // FIX FONDAMENTALE: se la nota è già nel gruppo selezionato NON azzerare la selezione
-        if (!selectedNotes.includes(hit.note)) {
-          selectedNotes = [hit.note];
-          updateSelectionStatus();
-          drawPianoRoll();
-        }
-
-        dragOperation = hit.part === 'move' ? 'move-group' : hit.part;
-        dragTargetNote = hit.note;
-        dragStartPointerStep = clickedStepPrecise;
-        dragStartPointerNote = clickedNote;
-
-        // Snapshot per spostare tutte le note selezionate insieme
-        groupSnapshots = selectedNotes.map(n => ({
-          noteRef: n,
-          origStep: n.step,
-          origNote: n.note,
-          origLen: n.len
-        }));
-
-        canvas.style.cursor = hit.part === 'move' ? 'grabbing' : 'ew-resize';
-        return;
-      }
-
-      // Click sul vuoto in modalità SELECT avvia Marquee Box
-      if (currentTool === 'select' && !hit) {
-        isBoxSelecting = true;
-        boxSelectStart = { x, y };
-        boxSelectCurrent = { x, y };
-        selectedNotes = [];
-        updateSelectionStatus();
-        drawPianoRoll();
-        return;
-      }
-
-      if (currentTool === 'draw') {
-        pushHistoryState();
-
-        const snap = getGridSnapStep();
-        const snappedStep = project.snapEnabled ? Math.floor(clickedStep / snap) * snap : Math.floor(clickedStep);
-        const newNote = { step: snappedStep, note: clickedNote, len: isDrum ? 1 : Math.max(1, snap), vel: 110 };
-        trk.notes.push(newNote);
-        activeDrawingNote = newNote;
-        playInternalSound(trk.type, clickedNote, 110, 0.2);
-
-        if (!trk.clockOnly) {
-          sendMidiNoteOn(trk.ch, clickedNote, 110);
-          setTimeout(() => sendMidiNoteOff(trk.ch, clickedNote), 200);
-        }
-        triggerChannelMeter(project.selectedTrackIndex, 110);
-
-        drawPianoRoll();
-        if (velocityVisible) drawVelocityLane();
-      } else if (currentTool === 'eraser') {
-        pushHistoryState();
-
-        trk.notes = trk.notes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
-        selectedNotes = selectedNotes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
-        updateSelectionStatus();
-        drawPianoRoll();
-        if (velocityVisible) drawVelocityLane();
-      }
-    });
-
-    canvas.addEventListener('pointermove', e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      if (isDraggingKeys) {
-        const deltaY = y - dragStartY;
-        const stepThreshold = 8;
-        if (Math.abs(deltaY) >= stepThreshold) {
-          const semitones = Math.trunc(deltaY / stepThreshold);
-          octaveOffset = Math.max(12, Math.min(96, octaveOffset + semitones));
-          dragStartY = y;
-          drawPianoRoll();
-        }
-        return;
-      }
-
-      if (isBoxSelecting) {
-        boxSelectCurrent = { x, y };
-        const pat = project.patterns[project.activePattern];
-        const trk = pat.tracks[project.selectedTrackIndex];
-        const isDrum = trk.type === 'drum';
-        const keyWidth = isDrum ? 85 : 55;
-        const visibleSteps = project.zoomBars;
-        const stepWidth = (canvas.width - keyWidth) / visibleSteps;
-        const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
-        const numRows = Math.floor(canvas.height / rowHeight);
-
-        const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
-        const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
-        const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
-        const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
-
-        selectedNotes = trk.notes.filter(n => {
-          const rowIndex = isDrum ? (n.note - 36) : (numRows - 1 - (n.note - octaveOffset));
-          const noteX = keyWidth + n.step * stepWidth;
-          const noteY = rowIndex * rowHeight;
-          const noteW = Math.max(stepWidth * (n.len || 1) - 2, 8);
-          const noteH = rowHeight;
-
-          return !(noteX + noteW < minX || noteX > maxX || noteY + noteH < minY || noteY > maxY);
-        });
-
-        updateSelectionStatus();
-        drawPianoRoll();
-        return;
-      }
-
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-      const keyWidth = isDrum ? 85 : 55;
-      const stepWidth = (canvas.width - keyWidth) / project.zoomBars;
-      const currentStepPointer = (x - keyWidth) / stepWidth;
-      const snap = getGridSnapStep();
-
-      // SPOSTAMENTO DI GRUPPO / TUTTE LE NOTE SELEZIONATE ALL'UNISONO
-      if (dragOperation === 'move-group' && groupSnapshots.length > 0) {
-        let deltaStepRaw = currentStepPointer - dragStartPointerStep;
-        let deltaStep = project.snapEnabled ? Math.round(deltaStepRaw / snap) * snap : Math.round(deltaStepRaw * 10) / 10;
-
-        const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
-        const numRows = Math.floor(canvas.height / rowHeight);
-        const curRow = Math.floor(y / rowHeight);
-        const currentPointerNote = isDrum ? (36 + Math.max(0, Math.min(15, curRow))) : (octaveOffset + (numRows - 1 - curRow));
-        const deltaPitch = isDrum ? 0 : (currentPointerNote - dragStartPointerNote);
-
-        let canMove = true;
-        for (let snapItem of groupSnapshots) {
-          const testStep = snapItem.origStep + deltaStep;
-          const testPitch = snapItem.origNote + deltaPitch;
-          if (testStep < 0 || testStep + snapItem.origLen > pat.steps) canMove = false;
-          if (testPitch < 12 || testPitch > 108) canMove = false;
-        }
-
-        if (canMove) {
-          groupSnapshots.forEach(snapItem => {
-            snapItem.noteRef.step = snapItem.origStep + deltaStep;
-            snapItem.noteRef.note = snapItem.origNote + deltaPitch;
-          });
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        }
-        return;
-      }
-
-      if (dragOperation === 'resize-right' && dragTargetNote) {
-        let newLen = currentStepPointer - dragTargetNote.step;
-        if (project.snapEnabled) {
-          newLen = Math.max(snap, Math.round(newLen / snap) * snap);
-        } else {
-          newLen = Math.max(0.25, Math.round(newLen * 10) / 10);
-        }
-        if (dragTargetNote.len !== newLen) {
-          dragTargetNote.len = newLen;
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        }
-        return;
-      }
-
-      if (dragOperation === 'resize-left' && dragTargetNote) {
-        let snappedStep = currentStepPointer;
-        if (project.snapEnabled) {
-          snappedStep = Math.max(0, Math.round(snappedStep / snap) * snap);
-        } else {
-          snappedStep = Math.max(0, Math.round(snappedStep * 10) / 10);
-        }
-        const noteEnd = groupSnapshots[0]?.origStep + groupSnapshots[0]?.origLen;
-        if (snappedStep < noteEnd) {
-          dragTargetNote.step = snappedStep;
-          dragTargetNote.len = noteEnd - snappedStep;
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        }
-        return;
-      }
-
-      if (currentTool === 'draw' && activeDrawingNote) {
-        if (!isDrum) {
-          let rawLen = currentStepPointer - activeDrawingNote.step + 1;
-          let snappedLen = project.snapEnabled ? Math.max(snap, Math.round(rawLen / snap) * snap) : Math.max(0.25, rawLen);
-          if (activeDrawingNote.len !== snappedLen) {
-            activeDrawingNote.len = snappedLen;
-            drawPianoRoll();
-            if (velocityVisible) drawVelocityLane();
-          }
-        }
-      }
-    });
-
-    window.addEventListener('pointerup', (e) => {
-      if (isDraggingKeys && canvas) {
-        try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
-      }
-      isDraggingKeys = false;
-      activeDrawingNote = null;
-      dragOperation = null;
-      dragTargetNote = null;
-      groupSnapshots = [];
-      isDraggingVelocity = false;
-      if (isBoxSelecting) {
-        isBoxSelecting = false;
-        drawPianoRoll();
-      }
-      if (canvas) canvas.style.cursor = currentTool === 'select' ? 'default' : currentTool === 'draw' ? 'crosshair' : 'default';
-    });
-
-    function handleVelocityPointer(e) {
-      const rect = velCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const pat = project.patterns[project.activePattern];
-      const trk = pat.tracks[project.selectedTrackIndex];
-      const isDrum = trk.type === 'drum';
-      const keyWidth = isDrum ? 85 : 55;
-
-      if (x < keyWidth) return;
-
-      const visibleSteps = project.zoomBars;
-      const stepWidth = (velCanvas.width - keyWidth) / visibleSteps;
-      const clickedStep = Math.floor((x - keyWidth) / stepWidth);
-
-      const clampedY = Math.max(2, Math.min(velCanvas.height - 4, y));
-      const velVal = Math.max(1, Math.min(127, Math.round((1 - (clampedY / velCanvas.height)) * 127)));
-
-      document.getElementById('lblCurrentVelHover').textContent = `VEL: ${velVal}`;
-
-      const targetNote = trk.notes.find(n => clickedStep >= n.step && clickedStep < n.step + (n.len || 1));
-      if (targetNote) {
-        targetNote.vel = velVal;
-        drawVelocityLane();
-        drawPianoRoll();
-      }
-    }
-
-    velCanvas.addEventListener('pointerdown', e => {
-      pushHistoryState();
-      isDraggingVelocity = true;
-      handleVelocityPointer(e);
-    });
-
-    velCanvas.addEventListener('pointermove', e => {
-      if (isDraggingVelocity) handleVelocityPointer(e);
-    });
-
-    document.getElementById('btnEdDeleteSelected').onclick = () => {
-      pushHistoryState();
-      const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
-      trk.notes = trk.notes.filter(n => !selectedNotes.includes(n));
-      selectedNotes = [];
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      renderEditorTrackRail();
-      showToast("Note eliminate");
-    };
-
-    document.getElementById('btnEdDeselectAll').onclick = () => {
-      selectedNotes = [];
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-    };
-
-    document.getElementById('btnEdClear').onclick = () => {
-      pushHistoryState();
-      project.patterns[project.activePattern].tracks[project.selectedTrackIndex].notes = [];
-      selectedNotes = [];
-      updateSelectionStatus();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      renderEditorTrackRail();
-    };
-
-    document.getElementById('selZoomBars').onchange = (e) => {
-      project.zoomBars = parseInt(e.target.value);
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-    };
-
-    function autoCenterPianoRoll() {
-      const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
-      if (trk.type !== 'drum' && trk.notes.length > 0) {
-        const avgNote = Math.round(trk.notes.reduce((acc, n) => acc + n.note, 0) / trk.notes.length);
-        octaveOffset = Math.max(12, Math.min(96, avgNote - 8));
-      }
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-    }
-
-    function updateEditorSoloState() {
-      const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
-      const btn = document.getElementById('btnEdSoloToggle');
-      const lbl = document.getElementById('lblEdSolo');
-      if (trk.solo) {
-        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn-accent glow-accent flex items-center gap-1 shrink-0';
-        lbl.textContent = 'SOLO ON';
-      } else {
-        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0';
-        lbl.textContent = 'SOLO';
-      }
-    }
-
-    // ==========================================
-    // EDITOR TEMI GRAFICI LIVE
-    // ==========================================
-    function applyCustomThemeColor(varName, color) {
-      document.documentElement.style.setProperty(varName, color);
-    }
-
-    document.getElementById('thmBgMain').oninput = (e) => applyCustomThemeColor('--bg-main', e.target.value);
-    document.getElementById('thmBgPanel').oninput = (e) => applyCustomThemeColor('--bg-panel', e.target.value);
-    document.getElementById('thmBgCard').oninput = (e) => applyCustomThemeColor('--bg-card', e.target.value);
-    document.getElementById('thmBorder').oninput = (e) => applyCustomThemeColor('--border-color', e.target.value);
-    document.getElementById('thmAccent').oninput = (e) => applyCustomThemeColor('--accent-color', e.target.value);
-
-    document.querySelectorAll('.theme-select-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.documentElement.style = "";
-        document.body.className = `flex flex-col h-screen w-screen overflow-hidden select-none theme-${btn.dataset.theme}`;
-        showToast(`Tema attivo: ${btn.textContent}`);
-        drawPianoRoll();
-      };
-    });
-
-    // ==========================================
-    // CHAINER & SONG TIMELINE
-    // ==========================================
-    function renderChainSlots() {
-      const container = document.getElementById('chainSlotsContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      document.getElementById('lblChainLength').textContent = project.chain.length;
-
-      project.chain.forEach((slot, idx) => {
-        const isCurrent = project.songMode && project.isPlaying && project.currentChainIndex === idx;
-        const pat = project.patterns[slot.pat] || project.patterns[0];
-        const slotEl = document.createElement('div');
-
-        slotEl.className = `touch-btn shrink-0 w-32 h-28 rounded-lg border-2 ${isCurrent ? 'border-amber-400 bg-amber-950/80 glow-accent' : 'app-card app-border'} p-2 flex flex-col justify-between shadow-md`;
-
-        slotEl.innerHTML = `
-          <div class="flex justify-between items-center border-b pb-1 app-border">
-            <span class="font-black text-xs text-amber-400 font-mono truncate">#${idx + 1} [${pat.name}]</span>
-            <button class="btn-del-slot text-zinc-400 hover:text-rose-400 font-black text-sm" data-idx="${idx}">✕</button>
-          </div>
-          <div class="flex items-center justify-between text-[10px] text-zinc-300 font-bold">
-            <span>STEP: ${pat.steps}</span>
-            <span class="text-amber-400 font-mono">${pat.steps * slot.loops} TOT</span>
-          </div>
-          <button class="btn-loop-mult touch-btn py-1 rounded app-btn border text-center text-xs font-black text-amber-400" data-idx="${idx}">
-            DURATA: x${slot.loops}
-          </button>
-          <div class="flex justify-between text-[10px] gap-1">
-            <button class="btn-move-left flex-1 py-0.5 app-btn border rounded font-black" data-idx="${idx}">◀</button>
-            <button class="btn-move-right flex-1 py-0.5 app-btn border rounded font-black" data-idx="${idx}">▶</button>
-          </div>
-        `;
-        container.appendChild(slotEl);
-      });
-
-      container.querySelectorAll('.btn-del-slot').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          project.chain.splice(parseInt(b.dataset.idx), 1);
-          renderChainSlots();
-        };
-      });
-      container.querySelectorAll('.btn-loop-mult').forEach(b => {
-        b.onclick = () => {
-          const s = project.chain[parseInt(b.dataset.idx)];
-          s.loops = s.loops === 1 ? 2 : s.loops === 2 ? 4 : 1;
-          renderChainSlots();
-        };
-      });
-    }
-
-    function renderPatAddButtons() {
-      const container = document.getElementById('patAddButtonsContainer');
-      const resetBtn = document.getElementById('btnClearChain');
-      if (!container || !resetBtn) return;
-      container.querySelectorAll('.pat-add-btn').forEach(e => e.remove());
-
-      project.patterns.forEach((p, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'pat-add-btn touch-btn px-2.5 py-1 rounded app-btn border font-black text-xs';
-        btn.style.color = p.color || '#f59e0b';
-        btn.textContent = p.name;
-        btn.onclick = () => {
-          project.chain.push({ pat: idx, loops: 1 });
-          renderChainSlots();
-        };
-        container.insertBefore(btn, resetBtn);
-      });
-    }
-
-    function renderChainerMonitorLanes() {
-      const container = document.getElementById('chainMonitorLanes');
-      if (!container) return;
-      container.innerHTML = '';
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-
-      pat.tracks.forEach((trk, idx) => {
-        const lane = document.createElement('div');
-        lane.className = 'app-card border rounded px-2 py-1 flex items-center justify-between text-[10px]';
-        lane.innerHTML = `
-          <div class="flex items-center gap-1.5 w-28 truncate">
-            <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${trk.color || '#f59e0b'}"></span>
-            <span class="font-bold text-zinc-200 truncate">${trk.name}</span>
-          </div>
-          <div class="flex-1 mx-2 h-2.5 bg-black/60 rounded overflow-hidden relative border app-border">
-            <div id="lanePlayhead-${idx}" class="absolute top-0 bottom-0 w-1 bg-amber-400" style="left: ${(currentStep / pat.steps) * 100}%"></div>
-          </div>
-          <span class="text-zinc-400 font-mono">CH${trk.ch}</span>
-        `;
-        container.appendChild(lane);
-      });
-    }
-
-    function updateChainerPlayhead() {
-      const pat = project.patterns[project.activePattern];
-      if (!pat) return;
-      for (let t = 0; t < 16; t++) {
-        const bar = document.getElementById(`lanePlayhead-${t}`);
-        if (bar) bar.style.left = `${((currentStep % pat.steps) / pat.steps) * 100}%`;
-      }
-    }
-
-    function renderPatternsDeck() {
-      const deck = document.getElementById('patternsDeck');
-      if (!deck) return;
-      deck.innerHTML = '';
-
-      project.patterns.forEach((pat, idx) => {
-        const card = document.createElement('div');
-        const isActive = project.activePattern === idx;
-        card.className = `touch-btn shrink-0 w-60 rounded-lg border-2 ${isActive ? 'border-amber-400 app-panel glow-accent' : 'app-card app-border'} p-2.5 flex flex-col justify-between`;
-
-        card.innerHTML = `
-          <div>
-            <div class="flex justify-between items-center mb-1.5 gap-1">
-              <input type="text" value="${pat.name}" class="pat-rename-input bg-transparent border-b app-border text-xs font-black text-amber-400 outline-none flex-1 truncate" data-idx="${idx}">
-              <input type="color" value="${pat.color || '#f59e0b'}" class="pat-color-picker w-5 h-5 rounded cursor-pointer border-0 bg-transparent" data-idx="${idx}">
-              <span class="text-[10px] font-mono app-btn border px-1 rounded">${pat.steps} ST</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 mt-1">
-            <button class="btn-open-pat touch-btn flex-1 py-1 rounded app-btn border text-[11px] font-black" data-idx="${idx}">✏ EDIT</button>
-          </div>
-        `;
-        deck.appendChild(card);
-      });
-
-      deck.querySelectorAll('.btn-open-pat').forEach(b => {
-        b.onclick = () => {
-          project.activePattern = parseInt(b.dataset.idx);
-          switchView('editor');
-        };
-      });
-    }
-
-    function renderDawTimeline() {
-      const container = document.getElementById('dawTimelineTrack');
-      if (!container) return;
-      container.innerHTML = '';
-      let totalSongSteps = 0;
-
-      project.chain.forEach((slot, idx) => {
-        const pat = project.patterns[slot.pat] || project.patterns[0];
-        const slotSteps = pat.steps * slot.loops;
-        totalSongSteps += slotSteps;
-
-        const block = document.createElement('div');
-        block.className = `touch-btn shrink-0 h-32 rounded-lg border-2 app-card app-border p-2 flex flex-col justify-between shadow relative overflow-hidden`;
-        block.style.width = `${Math.max(90, pat.steps * 1.8 * slot.loops)}px`;
-        block.style.borderColor = pat.color || '#f59e0b';
-
-        block.innerHTML = `
-          <div class="flex justify-between items-center border-b app-border pb-1">
-            <span class="font-black text-xs truncate" style="color: ${pat.color || '#f59e0b'}">${pat.name}</span>
-            <span class="text-[9px] font-mono app-btn px-1.5 py-0.5 rounded font-bold">x${slot.loops}</span>
-          </div>
-          <div class="flex justify-between items-center text-[10px] font-mono text-zinc-300">
-            <span>${slotSteps} STEPS</span>
-          </div>
-        `;
-        container.appendChild(block);
-      });
-
-      document.getElementById('lblTotalSongSteps').textContent = totalSongSteps;
-    }
-
-    let activeView = 'mixer';
-    function switchView(viewName) {
-      activeView = viewName;
-      ['Mixer', 'Editor', 'Chainer', 'Scenes'].forEach(v => {
-        document.getElementById(`view${v}`).classList.add('hidden');
-        document.getElementById(`tab${v}`).className = 'tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white';
-      });
-
-      const cap = viewName.charAt(0).toUpperCase() + viewName.slice(1);
-      document.getElementById(`view${cap}`).classList.remove('hidden');
-      document.getElementById(`tab${cap}`).className = 'tab-btn px-3 py-1 rounded text-xs font-black app-btn-accent';
-
-      if (viewName === 'mixer') renderTracksGrid();
-      if (viewName === 'editor') {
-        renderEditorTrackRail();
-        syncEditorHeaderValues();
-        autoCenterPianoRoll();
-        updateEditorSoloState();
-        updateEditorClockOnlyState();
-        updateSelectionStatus();
-        setTimeout(resizeCanvas, 30);
-      }
-      if (viewName === 'chainer') {
-        renderChainSlots();
-        renderPatAddButtons();
-        renderChainerMonitorLanes();
-      }
-      if (viewName === 'scenes') {
-        renderPatternsDeck();
-        renderDawTimeline();
-      }
-    }
-
-    function setTool(tool) {
-      currentTool = tool;
-      ['toolDraw', 'toolSelect', 'toolEraser'].forEach(id => {
-        document.getElementById(id).className = 'touch-btn px-2 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white';
-      });
-      const act = tool === 'draw' ? 'toolDraw' : tool === 'select' ? 'toolSelect' : 'toolEraser';
-      document.getElementById(act).className = 'touch-btn px-2 py-0.5 rounded text-xs font-bold app-btn-accent';
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.remove('opacity-0');
-      setTimeout(() => t.classList.add('opacity-0'), 2000);
-    }
-
-    document.getElementById('tabMixer').onclick = () => switchView('mixer');
-    document.getElementById('tabEditor').onclick = () => switchView('editor');
-    document.getElementById('tabChainer').onclick = () => switchView('chainer');
-    document.getElementById('tabScenes').onclick = () => switchView('scenes');
-
-    document.getElementById('btnPlay').onclick = startPlayback;
-    document.getElementById('btnStop').onclick = stopPlayback;
-    document.getElementById('btnPanic').onclick = sendMidiPanic;
-
-    document.getElementById('toolDraw').onclick = () => setTool('draw');
-    document.getElementById('toolSelect').onclick = () => setTool('select');
-    document.getElementById('toolEraser').onclick = () => setTool('eraser');
-
-    document.getElementById('btnEdSoloToggle').onclick = () => {
-      toggleTrackSoloWithGroup(project.selectedTrackIndex);
-      updateEditorSoloState();
-    };
-
-    document.getElementById('edTrackTypeSelect').onchange = (e) => {
-      project.patterns[project.activePattern].tracks[project.selectedTrackIndex].type = e.target.value;
-      renderEditorTrackRail();
-      drawPianoRoll();
-      if (velocityVisible) drawVelocityLane();
-      renderTracksGrid();
-    };
-
-    document.getElementById('btnUnmuteAll').onclick = () => {
-      project.patterns[project.activePattern].tracks.forEach(t => t.mute = false);
-      renderTracksGrid();
-      renderEditorTrackRail();
-      showToast("Tutti i canali sono stati unmutati");
-    };
-
-    document.getElementById('btnClearSolo').onclick = () => {
-      project.patterns[project.activePattern].tracks.forEach(t => t.solo = false);
-      renderTracksGrid();
-      renderEditorTrackRail();
-      updateEditorSoloState();
-      showToast("Tutti i canali Solo sono stati azzerati");
-    };
-
-    document.getElementById('btnSettings').onclick = () => {
-      ensureMidiReady();
-      document.getElementById('modalSettings').classList.remove('hidden');
-    };
-    document.getElementById('btnCloseSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
-    document.getElementById('btnSaveSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
-    
-    document.getElementById('btnConnectMidiDirect').onclick = () => ensureMidiReady();
-    document.getElementById('btnRescanMidi').onclick = () => {
-      midiAccess = null;
-      ensureMidiReady();
-    };
-
-    document.getElementById('btnTestNts1').onclick = () => {
-      ensureMidiReady(() => {
-        if (!midiAccess || midiAccess.outputs.size === 0) {
-          showToast("Nessuna porta MIDI USB rilevata");
-          return;
-        }
-        for (let ch = 1; ch <= 16; ch++) {
-          setTimeout(() => {
-            sendMidiNoteOn(ch, 60, 115);
-            triggerChannelMeter(ch - 1, 115);
-            setTimeout(() => sendMidiNoteOff(ch, 60), 120);
-          }, (ch - 1) * 180);
-        }
-        showToast("Test invio in broadcast su tutte le porte (CH 1-16)");
-      });
-    };
-
-    function bootApp() {
-      renderTracksGrid();
-      renderChainSlots();
-      renderPatAddButtons();
-      renderPatternsDeck();
-      renderDawTimeline();
-      switchView('mixer');
-      setTimeout(resizeCanvas, 50);
-    }
-
-    if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', bootApp);
-    } else {
-      bootApp();
-    }
-  </script>
-</body>
-</html>
+      40: "Snare Tight", 41: "Low Tom", 42: "Closed Hat"
