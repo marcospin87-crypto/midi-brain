@@ -79,6 +79,13 @@
     .glow-accent { box-shadow: 0 0 12px var(--accent-color); }
     .touch-btn { touch-action: manipulation; transition: transform 0.06s ease, filter 0.06s ease; }
     .touch-btn:active { transform: scale(0.96); filter: brightness(1.25); }
+
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+
+    .trk-meter-bar {
+      transition: width 0.04s ease-out, background-color 0.15s ease-out;
+    }
   </style>
 </head>
 <body class="flex flex-col h-screen w-screen overflow-hidden select-none">
@@ -119,10 +126,10 @@
     <!-- TABS -->
     <div class="flex items-center gap-1 shrink-0">
       <div class="flex app-card p-0.5 rounded border gap-1">
-        <button id="tabMixer" class="tab-btn px-2.5 py-1 rounded text-xs font-black app-btn-accent">MIXER 16</button>
-        <button id="tabEditor" class="tab-btn px-2.5 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PIANO ROLL</button>
-        <button id="tabChainer" class="tab-btn px-2.5 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">SONG CHAIN</button>
-        <button id="tabScenes" class="tab-btn px-2.5 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PATTERNS & TIMELINE</button>
+        <button id="tabMixer" class="tab-btn px-3 py-1 rounded text-xs font-black app-btn-accent">MIXER 16</button>
+        <button id="tabEditor" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PIANO ROLL</button>
+        <button id="tabChainer" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">SONG CHAIN</button>
+        <button id="tabScenes" class="tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white">PATTERNS & TIMELINE</button>
       </div>
     </div>
 
@@ -146,59 +153,104 @@
     <!-- 1. MIXER -->
     <section id="viewMixer" class="view-panel h-full w-full flex flex-col">
       <div class="flex justify-between items-center mb-1.5 shrink-0">
-        <span class="text-xs font-black tracking-wider uppercase text-zinc-400">16 Canali Hardware Mixer</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-black tracking-wider uppercase text-zinc-300">16 Canali Hardware Mixer</span>
+          <span class="text-[10px] app-btn border px-2 py-0.5 rounded font-mono text-amber-400">GROUP LINKED MUTE & SOLO</span>
+        </div>
         <div class="flex items-center gap-2 text-[10px]">
-          <button id="btnUnmuteAll" class="touch-btn px-2 py-0.5 app-btn border rounded">UNMUTE ALL</button>
-          <button id="btnClearSolo" class="touch-btn px-2 py-0.5 app-btn border rounded">CLEAR SOLO</button>
+          <button id="btnUnmuteAll" class="touch-btn px-2.5 py-1 app-btn border rounded font-black hover:text-amber-400">UNMUTE ALL</button>
+          <button id="btnClearSolo" class="touch-btn px-2.5 py-1 app-btn border rounded font-black hover:text-amber-400">CLEAR SOLO</button>
         </div>
       </div>
       <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
     </section>
 
-    <!-- 2. PIANO ROLL CON VELOCITY LANE A SCOMPARSA -->
+    <!-- 2. PIANO ROLL CON TOOLBAR AD ALTEZZA FISSA -->
     <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
-      <div class="app-panel border rounded-t px-2 py-1.5 flex items-center justify-between shrink-0 gap-2 overflow-x-auto">
-        <div class="flex items-center gap-2 flex-wrap">
-          <div class="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border app-border">
+      <div class="app-panel border rounded-t px-2 h-12 flex items-center justify-between shrink-0 gap-2 overflow-x-auto flex-nowrap">
+        <div class="flex items-center gap-2 flex-nowrap shrink-0">
+          <div class="flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded border app-border shrink-0">
             <span class="text-[10px] font-bold text-zinc-400">PAT:</span>
             <span id="lblEditorPatName" class="text-xs font-black text-amber-400">A</span>
           </div>
 
-          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
             <span class="text-[10px] font-bold text-zinc-400">TRACCIA:</span>
-            <input type="text" id="edTrackNameInput" class="w-28 bg-transparent text-xs font-black text-amber-400 outline-none truncate" value="Korg NTS-1">
+            <input type="text" id="edTrackNameInput" class="w-24 bg-transparent text-xs font-black text-amber-400 outline-none truncate" value="Korg NTS-1">
           </div>
 
-          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0" title="Colore Traccia">
+            <input type="color" id="edTrackColorPicker" class="w-5 h-5 cursor-pointer bg-transparent border-0 rounded">
+          </div>
+
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
             <span class="text-[10px] font-bold text-zinc-400">MIDI CH:</span>
-            <select id="edTrackMidiChSelect" class="app-btn border text-xs font-mono font-bold text-amber-400 rounded px-1 py-0.5 outline-none"></select>
+            <select id="edTrackMidiChSelect" class="app-btn border text-xs font-mono font-bold text-amber-400 rounded px-1.5 py-0.5 outline-none"></select>
           </div>
 
-          <button id="btnEdSoloToggle" class="touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1">
+          <button id="btnEdSoloToggle" class="touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0">
             🎧 <span id="lblEdSolo">SOLO</span>
           </button>
 
-          <select id="edTrackTypeSelect" class="app-btn border text-xs font-bold rounded px-1.5 py-0.5 outline-none">
-            <option value="synth">🎹 INST (Piano)</option>
-            <option value="drum">🥁 DRUM (16 Pad)</option>
-          </select>
-
-          <div class="h-5 w-px app-border"></div>
-
-          <div class="flex app-card p-0.5 rounded border gap-1">
-            <button id="toolDraw" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold app-btn-accent">✎ DRAW</button>
-            <button id="toolSelect" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⬚ SELECT</button>
-            <button id="toolEraser" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white">⌫ ERASE</button>
-          </div>
-
-          <!-- Pulsante per aprire a tendina la barra Velocity -->
-          <button id="btnToggleVelocity" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold border app-btn flex items-center gap-1 text-amber-400">
-            📊 VELOCITY <span id="lblVelArrow">▼</span>
+          <button id="btnEdClockOnlyToggle" class="touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0" title="Invia solo MIDI Clock a questo canale senza note (es. KO-II)">
+            ⏱ <span id="lblEdClockOnly">CLOCK ONLY</span>
           </button>
 
-          <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
-            <span>SNAP:</span>
-            <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono">
+          <select id="edTrackTypeSelect" class="app-btn border text-xs font-bold rounded px-1.5 py-0.5 outline-none shrink-0">
+            <option value="synth">🎹 INST</option>
+            <option value="drum">🥁 DRUM</option>
+          </select>
+
+          <div class="h-5 w-px app-border shrink-0"></div>
+
+          <!-- Strumenti Draw, Select, Erase -->
+          <div class="flex app-card p-0.5 rounded border gap-1 shrink-0">
+            <button id="toolDraw" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold app-btn-accent" title="Disegna nota o trascina">✎ DRAW</button>
+            <button id="toolSelect" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white" title="Trascina sulla griglia per selezionare più note contemporaneamente">⬚ SELECT</button>
+            <button id="toolEraser" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold text-zinc-400 hover:text-white" title="Cancella nota">⌫ ERASE</button>
+          </div>
+
+          <!-- Pulsanti UNDO, REDO, COPY, PASTE, DUP -->
+          <div class="flex app-card p-0.5 rounded border gap-1 shrink-0">
+            <button id="btnUndo" class="touch-btn px-2 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Annulla (Ctrl+Z)">↶</button>
+            <button id="btnRedo" class="touch-btn px-2 py-0.5 rounded text-xs font-black app-btn border text-zinc-300 hover:text-amber-400" title="Ripristina (Ctrl+Y)">↷</button>
+            <button id="btnCopy" class="touch-btn px-2 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Copia selezione (Ctrl+C)">⎘ COPY</button>
+            <button id="btnPaste" class="touch-btn px-2 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Incolla selezione (Ctrl+V)">📋 PASTE</button>
+            <button id="btnDuplicate" class="touch-btn px-2 py-0.5 rounded text-xs font-black app-btn border text-amber-400 hover:bg-amber-500 hover:text-black" title="Duplica note selezionate (Ctrl+D)">DUP</button>
+          </div>
+
+          <!-- CONTROLLO GATE DELLA NOTA -->
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0" title="Percentuale di durata della nota (Gate Length)">
+            <span class="text-[10px] font-bold text-zinc-400">GATE:</span>
+            <select id="selNoteGate" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-[10px] font-bold text-amber-400">
+              <option value="0.25">25% (Staccato)</option>
+              <option value="0.50">50%</option>
+              <option value="0.75">75%</option>
+              <option value="0.90" selected>90% (Standard)</option>
+              <option value="1.00">100% (Legato)</option>
+            </select>
+          </div>
+
+          <!-- CONTROLLO DURATA PATTERN -->
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
+            <span class="text-[10px] font-bold text-zinc-400">DURATA:</span>
+            <button id="btnPatStepDec" class="touch-btn px-1 text-xs font-black app-btn border rounded text-amber-400">-</button>
+            <input type="number" id="inputPatSteps" min="1" max="128" value="64" class="w-10 bg-transparent text-center font-mono font-black text-xs text-amber-400 outline-none">
+            <button id="btnPatStepInc" class="touch-btn px-1 text-xs font-black app-btn border rounded text-amber-400">+</button>
+            <div class="flex gap-0.5 ml-1">
+              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="16">16</button>
+              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="32">32</button>
+              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="64">64</button>
+              <button class="btn-step-preset px-1 py-0.2 rounded text-[9px] font-mono border app-btn" data-steps="128">128</button>
+            </div>
+          </div>
+
+          <!-- Tasto SNAP ON / OFF -->
+          <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded shrink-0">
+            <button id="btnToggleSnap" class="touch-btn px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white">
+              SNAP: <span id="lblSnapStatus">ON</span>
+            </button>
+            <select id="selGridRes" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-[10px] font-bold">
               <option value="32">1/32</option>
               <option value="16" selected>1/16</option>
               <option value="8">1/8</option>
@@ -206,7 +258,12 @@
             </select>
           </div>
 
-          <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
+          <!-- Pulsante Velocity Tendina -->
+          <button id="btnToggleVelocity" class="touch-btn px-2.5 py-0.5 rounded text-xs font-bold border app-btn flex items-center gap-1 text-amber-400 shrink-0">
+            📊 VELOCITY <span id="lblVelArrow">▼</span>
+          </button>
+
+          <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400 shrink-0">
             <span>ZOOM:</span>
             <select id="selZoomBars" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-amber-400 font-bold">
               <option value="16">1 Bar</option>
@@ -217,16 +274,17 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-xs text-zinc-300 font-bold hidden">DESELEZIONA</button>
-          <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black hidden">ELIMINA SELEZIONE</button>
+        <!-- Sezione Pulsanti Selezione (Area ad ampiezza fissa per evitare salti di layout) -->
+        <div class="flex items-center gap-1.5 shrink-0 pl-2">
+          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-xs text-zinc-300 font-bold invisible transition-opacity">DESELEZIONA</button>
+          <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black invisible transition-opacity">ELIMINA</button>
           <button id="btnEdClear" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-bold">CLEAR</button>
         </div>
       </div>
 
       <!-- Wrapper Principale Griglia + Velocity -->
       <div class="flex-1 flex overflow-hidden border border-t-0 app-border min-h-0">
-        <div id="edTrackRail" class="w-48 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
+        <div id="edTrackRail" class="w-56 app-panel border-r app-border flex flex-col overflow-y-auto shrink-0 p-1 gap-1"></div>
         
         <div class="flex-1 flex flex-col min-h-0 relative">
           <!-- Piano Roll Canvas -->
@@ -234,10 +292,10 @@
             <canvas id="dawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
           </div>
 
-          <!-- Barra della Velocity a tendina (collassabile) -->
+          <!-- Barra della Velocity a tendina -->
           <div id="velocityContainer" class="h-28 border-t app-border bg-[#0a0c14] relative hidden shrink-0 flex flex-col">
             <div class="flex items-center justify-between px-2 py-0.5 bg-black/40 border-b app-border text-[10px] text-zinc-400 font-bold shrink-0">
-              <span>LANE VELOCITY (Tocca o trascina sulle barre per impostare il valore 1-127)</span>
+              <span>LANE VELOCITY (Tocca o trascina per regolare 1-127)</span>
               <span class="text-amber-400 font-mono" id="lblCurrentVelHover">VEL: --</span>
             </div>
             <div class="flex-1 relative overflow-hidden">
@@ -306,11 +364,11 @@
 
   </main>
 
-  <!-- MODAL: SETTINGS -->
+  <!-- MODAL: SETTINGS & THEME CUSTOMIZER -->
   <div id="modalSettings" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="app-panel border rounded-lg w-[620px] max-w-[95vw] p-4 flex flex-col gap-3 shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div class="app-panel border rounded-lg w-[640px] max-w-[95vw] p-4 flex flex-col gap-3 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b app-border pb-2">
-        <h3 class="text-sm font-black text-amber-500 uppercase tracking-wider">Impostazioni MIDI USB EtherSynth</h3>
+        <h3 class="text-sm font-black text-amber-500 uppercase tracking-wider">Impostazioni & Personalizzazione Temi</h3>
         <button id="btnCloseSettings" class="touch-btn text-zinc-400 hover:text-white text-base">✕</button>
       </div>
 
@@ -318,15 +376,15 @@
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs font-black text-amber-400 uppercase">Dispositivi MIDI Rilevati:</span>
           <button id="btnTestNts1" class="touch-btn px-3 py-1.5 rounded bg-amber-500 text-black text-xs font-black shadow glow-accent">
-            ⚡ TEST INVIO NOTE NTS-1 (CH 1-16)
+            ⚡ TEST INVIO NOTE NTS-1
           </button>
         </div>
         
         <div class="grid grid-cols-2 gap-2 text-[11px]">
           <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT (Output Target):</span>
+            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT:</span>
             <select id="selMidiOut" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
-              <option value="AUTO">AUTO (Rileva Korg / USB Attivo)</option>
+              <option value="ALL">TUTTE LE PORTE (Broadcast Multi-Synth)</option>
             </select>
           </div>
           <div>
@@ -345,28 +403,40 @@
         </div>
       </div>
 
-      <div class="app-card border rounded p-2.5">
-        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Filtri MIDI Hardware:</span>
-        <div class="grid grid-cols-2 gap-2 text-xs text-zinc-300">
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" id="chkSendNotes" checked class="rounded accent-amber-500">
-            <span>Invia Note On / Note Off</span>
-          </label>
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" id="chkSendCC" checked class="rounded accent-amber-500">
-            <span>Invia Control Change (CC)</span>
-          </label>
-        </div>
-      </div>
-
       <div>
-        <label class="text-[11px] font-black text-zinc-400 uppercase block mb-1">Temi Grafici:</label>
+        <label class="text-[11px] font-black text-zinc-400 uppercase block mb-1">Preset Temi:</label>
         <div class="grid grid-cols-5 gap-1.5">
           <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="dark">Cyber Dark</button>
           <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="ableton">Ableton</button>
           <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="fl">FL Orange</button>
           <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="acid">Acid Neon</button>
           <button class="theme-select-btn touch-btn p-1.5 rounded text-xs font-bold border app-btn" data-theme="blue">Deep Blue</button>
+        </div>
+      </div>
+
+      <div class="app-card border rounded p-2.5">
+        <span class="text-xs font-black text-amber-400 uppercase block mb-2">Personalizza Colori Tema Live:</span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
+            <span>Sfondo Principale:</span>
+            <input type="color" id="thmBgMain" value="#0a0b10" class="w-6 h-6 cursor-pointer bg-transparent border-0">
+          </label>
+          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
+            <span>Sfondo Pannelli:</span>
+            <input type="color" id="thmBgPanel" value="#12141f" class="w-6 h-6 cursor-pointer bg-transparent border-0">
+          </label>
+          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
+            <span>Sfondo Schede:</span>
+            <input type="color" id="thmBgCard" value="#181b2a" class="w-6 h-6 cursor-pointer bg-transparent border-0">
+          </label>
+          <label class="flex items-center justify-between p-1.5 app-btn border rounded">
+            <span>Colore Bordi:</span>
+            <input type="color" id="thmBorder" value="#262c44" class="w-6 h-6 cursor-pointer bg-transparent border-0">
+          </label>
+          <label class="flex items-center justify-between p-1.5 app-btn border rounded col-span-2">
+            <span class="font-bold">Colore Evidenziazione / Accento:</span>
+            <input type="color" id="thmAccent" value="#f59e0b" class="w-6 h-6 cursor-pointer bg-transparent border-0">
+          </label>
         </div>
       </div>
 
@@ -387,22 +457,22 @@
     }
 
     const HARDWARE_DEFAULTS = [
-      { name: "KO-II Kick", ch: 1, type: "drum", note: 36, grp: "G1" },
-      { name: "KO-II Snare", ch: 2, type: "drum", note: 38, grp: "G1" },
-      { name: "KO-II Hats", ch: 3, type: "drum", note: 42, grp: "G1" },
-      { name: "KO-II Percs", ch: 4, type: "drum", note: 46, grp: "G1" },
-      { name: "Korg NTS-1", ch: 5, type: "synth", note: 60, grp: "FREE" },
-      { name: "MicroFreak", ch: 6, type: "synth", note: 60, grp: "FREE" },
-      { name: "PRO-1 Bass", ch: 7, type: "synth", note: 48, grp: "FREE" },
-      { name: "Waldorf Rocket", ch: 8, type: "synth", note: 60, grp: "FREE" },
-      { name: "Electribe 2", ch: 9, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 10", ch: 10, type: "drum", note: 36, grp: "FREE" },
-      { name: "MIDI CH 11", ch: 11, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 12", ch: 12, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 13", ch: 13, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 14", ch: 14, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 15", ch: 15, type: "synth", note: 60, grp: "FREE" },
-      { name: "MIDI CH 16", ch: 16, type: "synth", note: 60, grp: "FREE" },
+      { name: "Korg NTS-1", ch: 1, type: "synth", note: 60, grp: "FREE", color: "#f59e0b", clockOnly: false },
+      { name: "Waldorf Rocket", ch: 2, type: "synth", note: 60, grp: "FREE", color: "#38bdf8", clockOnly: false },
+      { name: "KO-II Kick", ch: 3, type: "drum", note: 36, grp: "G1", color: "#f97316", clockOnly: false },
+      { name: "KO-II Snare", ch: 4, type: "drum", note: 38, grp: "G1", color: "#eab308", clockOnly: false },
+      { name: "KO-II Hats", ch: 5, type: "drum", note: 42, grp: "G1", color: "#84cc16", clockOnly: false },
+      { name: "KO-II Percs", ch: 6, type: "drum", note: 46, grp: "G1", color: "#10b981", clockOnly: false },
+      { name: "PRO-1 Bass", ch: 7, type: "synth", note: 48, grp: "FREE", color: "#22c55e", clockOnly: false },
+      { name: "MicroFreak", ch: 8, type: "synth", note: 60, grp: "FREE", color: "#a855f7", clockOnly: false },
+      { name: "Electribe 2", ch: 9, type: "synth", note: 60, grp: "FREE", color: "#ec4899", clockOnly: false },
+      { name: "MIDI CH 10", ch: 10, type: "drum", note: 36, grp: "FREE", color: "#06b6d4", clockOnly: false },
+      { name: "MIDI CH 11", ch: 11, type: "synth", note: 60, grp: "FREE", color: "#14b8a6", clockOnly: false },
+      { name: "MIDI CH 12", ch: 12, type: "synth", note: 60, grp: "FREE", color: "#6366f1", clockOnly: false },
+      { name: "MIDI CH 13", ch: 13, type: "synth", note: 60, grp: "FREE", color: "#d946ef", clockOnly: false },
+      { name: "MIDI CH 14", ch: 14, type: "synth", note: 60, grp: "FREE", color: "#f43f5e", clockOnly: false },
+      { name: "MIDI CH 15", ch: 15, type: "synth", note: 60, grp: "FREE", color: "#fb923c", clockOnly: false },
+      { name: "MIDI CH 16", ch: 16, type: "synth", note: 60, grp: "FREE", color: "#e11d48", clockOnly: false },
     ];
 
     const DRUM_MAP_NAMES = {
@@ -416,9 +486,11 @@
       bpm: 126,
       isPlaying: false,
       activePattern: 0,
-      selectedTrackIndex: 4,
+      selectedTrackIndex: 0,
       songMode: false,
       quantizeBar: true,
+      snapEnabled: true,
+      noteGateRatio: 0.90,
       internalAudioEnabled: false,
       zoomBars: 64,
       chain: [
@@ -438,6 +510,8 @@
           ch: HARDWARE_DEFAULTS[t].ch,
           type: HARDWARE_DEFAULTS[t].type,
           group: HARDWARE_DEFAULTS[t].grp,
+          color: HARDWARE_DEFAULTS[t].color,
+          clockOnly: HARDWARE_DEFAULTS[t].clockOnly,
           mute: false,
           solo: false,
           notes: []
@@ -451,18 +525,192 @@
     project.patterns.push(createNewPatternObject(2, "C - Breakdown", 32, "#22c55e"));
     project.patterns.push(createNewPatternObject(3, "D - Outro", 64, "#ec4899"));
 
-    // Demo Notes NTS-1
-    for (let s = 0; s < 64; s += 8) project.patterns[0].tracks[4].notes.push({ step: s, note: 60, len: 4, vel: 110 });
-    for (let s = 4; s < 64; s += 8) project.patterns[0].tracks[4].notes.push({ step: s, note: 67, len: 3, vel: 115 });
-    for (let s = 0; s < 64; s += 4) project.patterns[0].tracks[0].notes.push({ step: s, note: 36, len: 2, vel: 100 });
+    for (let s = 0; s < 64; s += 8) project.patterns[0].tracks[0].notes.push({ step: s, note: 60, len: 4, vel: 110 });
+    for (let s = 4; s < 64; s += 8) project.patterns[0].tracks[0].notes.push({ step: s, note: 67, len: 3, vel: 115 });
+    for (let s = 0; s < 64; s += 4) project.patterns[0].tracks[1].notes.push({ step: s, note: 48, len: 2, vel: 105 });
 
     let audioCtx = null;
     let midiAccess = null;
-    let selectedMidiOutput = null;
     let currentStep = 0;
     let sequencerTimer = null;
+    let clockPulseTimer = null;
     let midiLedTimer = null;
     let activeVoices = new Map();
+
+    let clipboardNotes = [];
+    let undoStack = [];
+    let redoStack = [];
+
+    function pushHistoryState() {
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+      const snapshot = JSON.stringify(curTrk.notes);
+      undoStack.push(snapshot);
+      if (undoStack.length > 50) undoStack.shift();
+      redoStack = [];
+    }
+
+    function applyUndo() {
+      if (undoStack.length === 0) {
+        showToast("Nessuna azione da annullare");
+        return;
+      }
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+      redoStack.push(JSON.stringify(curTrk.notes));
+      const prev = undoStack.pop();
+      curTrk.notes = JSON.parse(prev);
+      selectedNotes = [];
+      updateSelectionStatus();
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
+      showToast("Azione Annullata (Undo)");
+    }
+
+    function applyRedo() {
+      if (redoStack.length === 0) {
+        showToast("Nessuna azione da ripristinare");
+        return;
+      }
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+      undoStack.push(JSON.stringify(curTrk.notes));
+      const nxt = redoStack.pop();
+      curTrk.notes = JSON.parse(nxt);
+      selectedNotes = [];
+      updateSelectionStatus();
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
+      showToast("Azione Ripristinata (Redo)");
+    }
+
+    function copyNotes() {
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+      const targets = selectedNotes.length > 0 ? selectedNotes : curTrk.notes;
+
+      if (!targets || targets.length === 0) {
+        showToast("Nessuna nota da copiare");
+        return;
+      }
+
+      let minStep = Infinity;
+      targets.forEach(n => { if (n.step < minStep) minStep = n.step; });
+
+      clipboardNotes = targets.map(n => ({
+        relStep: n.step - minStep,
+        note: n.note,
+        len: n.len,
+        vel: n.vel
+      }));
+
+      showToast(`Copiate ${clipboardNotes.length} note`);
+    }
+
+    function pasteNotes() {
+      if (!clipboardNotes || clipboardNotes.length === 0) {
+        showToast("Appunti vuoti. Copia prima le note");
+        return;
+      }
+
+      pushHistoryState();
+
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+
+      const pasteBaseStep = project.isPlaying ? currentStep : 0;
+      let newSelected = [];
+
+      clipboardNotes.forEach(item => {
+        const targetStep = pasteBaseStep + item.relStep;
+        if (targetStep < curPat.steps) {
+          const newNote = {
+            step: targetStep,
+            note: item.note,
+            len: item.len,
+            vel: item.vel
+          };
+          curTrk.notes.push(newNote);
+          newSelected.push(newNote);
+        }
+      });
+
+      selectedNotes = newSelected;
+      updateSelectionStatus();
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
+      showToast(`Incollate ${newSelected.length} note (ora selezionate per spostamento)`);
+    }
+
+    function duplicateNotes() {
+      const curPat = project.patterns[project.activePattern];
+      const curTrk = curPat.tracks[project.selectedTrackIndex];
+      const targets = selectedNotes.length > 0 ? selectedNotes : curTrk.notes;
+      if (!targets || targets.length === 0) {
+        showToast("Nessuna nota da duplicare");
+        return;
+      }
+
+      pushHistoryState();
+
+      let minStep = Infinity;
+      let maxStep = -Infinity;
+      targets.forEach(n => {
+        if (n.step < minStep) minStep = n.step;
+        if (n.step + n.len > maxStep) maxStep = n.step + n.len;
+      });
+
+      const shift = Math.max(16, maxStep - minStep);
+      let newSelected = [];
+
+      targets.forEach(n => {
+        const newStep = n.step + shift;
+        if (newStep < curPat.steps) {
+          const dup = { step: newStep, note: n.note, len: n.len, vel: n.vel };
+          curTrk.notes.push(dup);
+          newSelected.push(dup);
+        }
+      });
+
+      selectedNotes = newSelected;
+      updateSelectionStatus();
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
+      showToast(`Duplicate ${newSelected.length} note`);
+    }
+
+    const channelMeterTimers = new Map();
+
+    function triggerChannelMeter(trackIdx, velocity = 100) {
+      const bar = document.getElementById(`trkMeterBar-${trackIdx}`);
+      const led = document.getElementById(`trkMeterLed-${trackIdx}`);
+      if (!bar && !led) return;
+
+      const pct = Math.max(25, Math.min(100, Math.round((velocity / 127) * 100)));
+
+      if (bar) {
+        bar.style.width = `${pct}%`;
+        bar.className = 'trk-meter-bar h-full rounded-sm bg-gradient-to-r from-emerald-500 to-amber-400';
+      }
+      if (led) {
+        led.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] transition-colors';
+      }
+
+      if (channelMeterTimers.has(trackIdx)) {
+        clearTimeout(channelMeterTimers.get(trackIdx));
+      }
+
+      const tId = setTimeout(() => {
+        if (bar) bar.style.width = '0%';
+        if (led) {
+          const pat = project.patterns[project.activePattern];
+          const trk = pat.tracks[trackIdx];
+          led.className = `w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-zinc-700'}`;
+        }
+      }, 140);
+
+      channelMeterTimers.set(trackIdx, tId);
+    }
 
     function flashMidiLed() {
       const led = document.getElementById('midiActivityLed');
@@ -518,24 +766,8 @@
       } catch (err) {}
     }
 
-    function getTargetOutput() {
-      if (!midiAccess || midiAccess.outputs.size === 0) return null;
-      const sel = document.getElementById('selMidiOut').value;
-      if (sel !== 'AUTO' && midiAccess.outputs.has(sel)) {
-        return midiAccess.outputs.get(sel);
-      }
-      let autoPort = null;
-      for (const [id, port] of midiAccess.outputs) {
-        const name = (port.name || '').toLowerCase();
-        if (name.includes('nts') || name.includes('korg')) return port;
-        if (!autoPort) autoPort = port;
-      }
-      return autoPort;
-    }
-
     function ensureMidiReady(callback) {
       if (midiAccess && midiAccess.outputs.size > 0) {
-        selectedMidiOutput = getTargetOutput();
         if (callback) callback();
         return;
       }
@@ -545,16 +777,13 @@
           updateMidiPortSelectors();
           m.onstatechange = updateMidiPortSelectors;
           
-          selectedMidiOutput = getTargetOutput();
           const portCount = m.outputs.size;
-          const targetName = selectedMidiOutput ? selectedMidiOutput.name : 'Nessuna';
-          
           const lbl = document.getElementById('lblDirectMidiStatus');
-          lbl.textContent = portCount > 0 ? `USB OK: ${targetName}` : "Nessun dispositivo USB";
+          lbl.textContent = portCount > 0 ? `USB: ${portCount} Dispositivi Attivi` : "Nessun dispositivo USB";
           lbl.className = portCount > 0 ? "text-emerald-400 font-bold" : "text-amber-400";
-          document.getElementById('lblUsbMidiStatus').textContent = portCount > 0 ? `Agganciato: ${targetName}` : "In attesa di cavo USB-OTG";
+          document.getElementById('lblUsbMidiStatus').textContent = portCount > 0 ? `${portCount} Porte Agganciate` : "In attesa di cavo USB";
           
-          showToast(portCount > 0 ? `Connesso: ${targetName}` : "Collega il Korg NTS-1 via USB-OTG");
+          showToast(portCount > 0 ? `Connessi ${portCount} dispositivi USB` : "Nessuna porta MIDI USB rilevata");
           if (callback) callback();
         }).catch(() => {
           document.getElementById('lblUsbMidiStatus').textContent = "Permesso USB negato";
@@ -566,9 +795,7 @@
     }
 
     function sendMidiNoteOn(channel, note, velocity) {
-      if (!document.getElementById('chkSendNotes').checked) return;
-      const target = getTargetOutput();
-      if (!target) return;
+      if (!midiAccess || midiAccess.outputs.size === 0) return;
 
       const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
       const vel = Math.max(1, Math.min(127, velocity || 100));
@@ -580,16 +807,23 @@
         sendMidiNoteOff(channel, note);
       }
 
-      try {
-        target.send(new Uint8Array([0x90 | ch, noteByte, vel]));
-        activeVoices.set(key, null);
-        flashMidiLed();
-      } catch (err) {}
+      const sel = document.getElementById('selMidiOut').value;
+      const data = new Uint8Array([0x90 | ch, noteByte, vel]);
+
+      if (sel === 'ALL' || sel === 'AUTO') {
+        midiAccess.outputs.forEach(port => {
+          try { port.send(data); } catch (err) {}
+        });
+      } else if (midiAccess.outputs.has(sel)) {
+        try { midiAccess.outputs.get(sel).send(data); } catch (err) {}
+      }
+
+      activeVoices.set(key, null);
+      flashMidiLed();
     }
 
     function sendMidiNoteOff(channel, note) {
-      const target = getTargetOutput();
-      if (!target) return;
+      if (!midiAccess || midiAccess.outputs.size === 0) return;
 
       const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
       const noteByte = note & 0x7F;
@@ -597,32 +831,41 @@
 
       activeVoices.delete(key);
 
-      try {
-        target.send(new Uint8Array([0x90 | ch, noteByte, 0x00]));
-      } catch (err) {}
+      const sel = document.getElementById('selMidiOut').value;
+      const data = new Uint8Array([0x90 | ch, noteByte, 0x00]);
+
+      if (sel === 'ALL' || sel === 'AUTO') {
+        midiAccess.outputs.forEach(port => {
+          try { port.send(data); } catch (err) {}
+        });
+      } else if (midiAccess.outputs.has(sel)) {
+        try { midiAccess.outputs.get(sel).send(data); } catch (err) {}
+      }
+    }
+
+    function sendMidiRealTimeClock(byte) {
+      if (!midiAccess || midiAccess.outputs.size === 0) return;
+      const data = new Uint8Array([byte]);
+      midiAccess.outputs.forEach(port => {
+        try { port.send(data); } catch (err) {}
+      });
     }
 
     function sendMidiPanic() {
-      const target = getTargetOutput();
-      activeVoices.forEach((timerId, key) => {
+      if (!midiAccess) return;
+      activeVoices.forEach((timerId) => {
         if (timerId) clearTimeout(timerId);
-        const parts = key.split('_');
-        const ch = parseInt(parts[0]) - 1;
-        const note = parseInt(parts[1]);
-        if (target && !isNaN(ch) && !isNaN(note)) {
-          try { target.send(new Uint8Array([0x90 | (ch & 0x0F), note & 0x7F, 0x00])); } catch (e) {}
-        }
       });
       activeVoices.clear();
 
-      if (target) {
+      midiAccess.outputs.forEach(target => {
         for (let ch = 0; ch < 16; ch++) {
           try {
             target.send(new Uint8Array([0xB0 | ch, 123, 0]));
             target.send(new Uint8Array([0xB0 | ch, 120, 0]));
           } catch (e) {}
         }
-      }
+      });
       showToast("MIDI Panic inviato");
     }
 
@@ -635,7 +878,7 @@
       const curOut = selOut.value;
       const curIn = selIn.value;
 
-      selOut.innerHTML = '<option value="AUTO">AUTO (Rileva Korg / USB Attivo)</option>';
+      selOut.innerHTML = '<option value="ALL">TUTTE LE PORTE (Broadcast Multi-Synth)</option>';
       selIn.innerHTML = '<option value="ALL">RICEVI DA TUTTE LE PORTE</option>';
 
       midiAccess.outputs.forEach(port => {
@@ -655,11 +898,10 @@
       });
       if (curIn && Array.from(selIn.options).some(o => o.value === curIn)) selIn.value = curIn;
 
-      selectedMidiOutput = getTargetOutput();
       const count = midiAccess.outputs.size;
       const lbl = document.getElementById('lblDirectMidiStatus');
-      if (count > 0 && selectedMidiOutput) {
-        lbl.textContent = `USB: ${selectedMidiOutput.name}`;
+      if (count > 0) {
+        lbl.textContent = `USB: ${count} Dispositivi Attivi`;
         lbl.className = "text-emerald-400 font-bold";
       }
     }
@@ -673,6 +915,7 @@
 
       if (status === 0x90 && vel > 0) {
         sendMidiNoteOn(targetChannel, note, vel);
+        triggerChannelMeter(targetTrackIdx, vel);
       } else if (status === 0x80 || (status === 0x90 && vel === 0)) {
         sendMidiNoteOff(targetChannel, note);
       }
@@ -684,23 +927,32 @@
 
       const stepDurationSec = (60 / project.bpm) / 4;
       const hasSolo = currentPat.tracks.some(t => t.solo);
+      const gateRatio = project.noteGateRatio || 0.90;
 
       for (let t = 0; t < 16; t++) {
         const trk = currentPat.tracks[t];
         if (trk.mute || (hasSolo && !trk.solo)) continue;
 
+        if (trk.clockOnly) {
+          triggerChannelMeter(t, 100);
+          continue;
+        }
+
         const targetChannel = trk.ch || (t + 1);
 
         for (let n of trk.notes) {
-          if (n.step === currentStep) {
-            const dur = n.len * stepDurationSec;
-            playInternalSound(trk.type, n.note, n.vel, dur);
+          if (Math.floor(n.step) === currentStep) {
+            const totalDurSec = n.len * stepDurationSec;
+            const gateDurSec = totalDurSec * gateRatio;
+
+            playInternalSound(trk.type, n.note, n.vel, gateDurSec);
             sendMidiNoteOn(targetChannel, n.note, n.vel);
+            triggerChannelMeter(t, n.vel);
 
             const key = `${targetChannel}_${n.note}`;
             const tId = setTimeout(() => {
               sendMidiNoteOff(targetChannel, n.note);
-            }, dur * 1000 * 0.90);
+            }, gateDurSec * 1000);
 
             activeVoices.set(key, tId);
           }
@@ -735,22 +987,98 @@
         if (project.internalAudioEnabled) getAudioContext();
         project.isPlaying = true;
         document.getElementById('btnPlay').classList.add('bg-emerald-500', 'glow-accent');
-        const intervalMs = (60000 / project.bpm) / 4;
-        sequencerTimer = setInterval(stepSequencerTick, intervalMs);
+
+        sendMidiRealTimeClock(0xFA);
+
+        const stepIntervalMs = (60000 / project.bpm) / 4;
+        sequencerTimer = setInterval(stepSequencerTick, stepIntervalMs);
+
+        const clockIntervalMs = (60000 / project.bpm) / 24;
+        clockPulseTimer = setInterval(() => {
+          sendMidiRealTimeClock(0xF8);
+        }, clockIntervalMs);
       });
     }
 
     function stopPlayback() {
       project.isPlaying = false;
       clearInterval(sequencerTimer);
+      clearInterval(clockPulseTimer);
       currentStep = 0;
       document.getElementById('btnPlay').classList.remove('bg-emerald-500', 'glow-accent');
+
+      sendMidiRealTimeClock(0xFC);
       sendMidiPanic();
+
       if (activeView === 'editor') {
         drawPianoRoll();
         if (velocityVisible) drawVelocityLane();
       }
       if (activeView === 'chainer') updateChainerPlayhead();
+    }
+
+    // ==========================================
+    // LOGICA MUTE, SOLO & CLOCK ONLY
+    // ==========================================
+    function toggleTrackMuteWithGroup(trackIdx) {
+      const pat = project.patterns[project.activePattern];
+      const target = pat.tracks[trackIdx];
+      const newMuteState = !target.mute;
+
+      if (target.group && target.group !== 'FREE') {
+        pat.tracks.forEach(t => {
+          if (t.group === target.group) t.mute = newMuteState;
+        });
+        showToast(`Gruppo [${target.group}]: ${newMuteState ? 'MUTATO' : 'UNMUTATO'}`);
+      } else {
+        target.mute = newMuteState;
+      }
+
+      renderTracksGrid();
+      renderEditorTrackRail();
+    }
+
+    function toggleTrackSoloWithGroup(trackIdx) {
+      const pat = project.patterns[project.activePattern];
+      const target = pat.tracks[trackIdx];
+      const newSoloState = !target.solo;
+
+      if (target.group && target.group !== 'FREE') {
+        pat.tracks.forEach(t => {
+          if (t.group === target.group) t.solo = newSoloState;
+        });
+        showToast(`Gruppo [${target.group}]: SOLO ${newSoloState ? 'ON' : 'OFF'}`);
+      } else {
+        target.solo = newSoloState;
+      }
+
+      renderTracksGrid();
+      renderEditorTrackRail();
+      updateEditorSoloState();
+    }
+
+    function toggleClockOnly(trackIdx) {
+      const trk = project.patterns[project.activePattern].tracks[trackIdx];
+      trk.clockOnly = !trk.clockOnly;
+      project.patterns.forEach(p => p.tracks[trackIdx].clockOnly = trk.clockOnly);
+
+      renderTracksGrid();
+      renderEditorTrackRail();
+      updateEditorClockOnlyState();
+      showToast(`${trk.name}: CLOCK ONLY ${trk.clockOnly ? 'ATTIVO' : 'DISATTIVO'}`);
+    }
+
+    function updateEditorClockOnlyState() {
+      const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
+      const btn = document.getElementById('btnEdClockOnlyToggle');
+      const lbl = document.getElementById('lblEdClockOnly');
+      if (trk.clockOnly) {
+        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border bg-cyan-700 border-cyan-400 text-cyan-200 shadow flex items-center gap-1 shrink-0';
+        lbl.textContent = 'CLOCK ONLY ON';
+      } else {
+        btn.className = 'touch-btn px-2 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0';
+        lbl.textContent = 'CLOCK ONLY';
+      }
     }
 
     function renderTracksGrid() {
@@ -760,78 +1088,111 @@
       const pat = project.patterns[project.activePattern];
       if (!pat) return;
 
+      const groupColors = {
+        'FREE': 'text-zinc-400 border-zinc-600',
+        'G1': 'text-amber-400 border-amber-500/60',
+        'G2': 'text-cyan-400 border-cyan-500/60',
+        'G3': 'text-emerald-400 border-emerald-500/60',
+        'G4': 'text-pink-400 border-pink-500/60',
+        'G5': 'text-purple-400 border-purple-500/60'
+      };
+
       pat.tracks.forEach((trk, idx) => {
         const card = document.createElement('div');
         const isSelected = project.selectedTrackIndex === idx;
-        card.className = `app-card border ${isSelected ? 'border-amber-400' : ''} rounded p-2 flex flex-col justify-between relative shadow-sm min-h-[75px]`;
+        const grpStyle = groupColors[trk.group] || 'text-zinc-400 border-zinc-600';
 
-        let grpBadgeColor = 'text-zinc-500';
-        if (trk.group === 'G1') grpBadgeColor = 'text-amber-400';
-        if (trk.group === 'G2') grpBadgeColor = 'text-cyan-400';
-        if (trk.group === 'G3') grpBadgeColor = 'text-emerald-400';
-        if (trk.group === 'G4') grpBadgeColor = 'text-pink-400';
-        if (trk.group === 'G5') grpBadgeColor = 'text-purple-400';
+        card.className = `app-card border-2 ${isSelected ? 'border-amber-400 shadow-lg' : 'app-border'} rounded-lg p-2.5 flex flex-col justify-between relative shadow-md`;
 
         card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 overflow-hidden">
-              <span class="w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-emerald-400'}"></span>
-              <span class="font-black text-xs truncate text-zinc-100">${trk.name}</span>
+          <div>
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5 overflow-hidden flex-1">
+                <span id="trkMeterLed-${idx}" class="w-2.5 h-2.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-zinc-700'}"></span>
+                <span class="font-black text-xs truncate text-zinc-100">${idx + 1}. ${trk.name}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button class="btn-mixer-clock touch-btn text-[9px] font-mono font-bold px-1 py-0.2 rounded border ${
+                  trk.clockOnly ? 'bg-cyan-600 text-white border-cyan-400' : 'app-btn text-zinc-400'
+                }" data-idx="${idx}" title="Attiva modalità Solo Clock">
+                  ${trk.clockOnly ? '⏱ CLOCK' : 'NOTES'}
+                </button>
+                <span class="text-[10px] font-mono font-black app-btn border px-1.5 py-0.5 rounded text-amber-400">CH ${trk.ch}</span>
+              </div>
             </div>
-            <span class="text-[10px] font-mono app-btn border px-1 rounded text-amber-400 font-bold">CH ${trk.ch}</span>
+
+            <div class="w-full h-1.5 bg-black/60 rounded-full overflow-hidden mt-1.5 border border-zinc-800">
+              <div id="trkMeterBar-${idx}" class="trk-meter-bar h-full w-0 rounded-full"></div>
+            </div>
           </div>
 
-          <div class="flex items-center justify-between text-[9px] font-black my-1">
-            <span class="${grpBadgeColor}">${trk.group}</span>
-            <div class="flex gap-0.5">
+          <div class="my-2">
+            <div class="flex justify-between items-center text-[9px] font-black uppercase text-zinc-400 mb-1">
+              <span>Raggruppamento:</span>
+              <span class="font-bold ${grpStyle}">${trk.group}</span>
+            </div>
+            <div class="grid grid-cols-6 gap-1">
               ${['FREE', 'G1', 'G2', 'G3', 'G4', 'G5'].map(g => `
-                <button class="grp-btn px-1 py-0.2 rounded border app-btn ${trk.group === g ? 'app-btn-accent' : ''}" data-idx="${idx}" data-grp="${g}">${g}</button>
+                <button class="grp-select-btn touch-btn py-1 rounded text-[10px] font-black border ${
+                  trk.group === g ? 'bg-amber-500 text-black border-amber-400 shadow font-extrabold' : 'app-btn border-zinc-700 text-zinc-300 hover:text-white'
+                }" data-idx="${idx}" data-grp="${g}">
+                  ${g}
+                </button>
               `).join('')}
             </div>
           </div>
 
-          <div class="flex items-center gap-1.5 mt-1">
-            <button class="btn-mute touch-btn flex-1 py-1 rounded text-xs font-black border ${trk.mute ? 'bg-rose-950 border-rose-700 text-rose-300' : 'app-btn'}" data-idx="${idx}">MUTE</button>
-            <button class="btn-solo touch-btn flex-1 py-1 rounded text-xs font-black border ${trk.solo ? 'app-btn-accent glow-accent' : 'app-btn'}" data-idx="${idx}">SOLO</button>
-            <button class="btn-edit touch-btn px-2.5 py-1 rounded text-xs font-black bg-zinc-700 hover:bg-zinc-600 text-white" data-idx="${idx}">EDIT</button>
+          <div class="flex items-center gap-1.5 pt-1 border-t app-border">
+            <button class="btn-mixer-mute touch-btn flex-1 py-1.5 rounded text-xs font-black border transition-all ${
+              trk.mute ? 'bg-rose-950 border-rose-600 text-rose-300 shadow' : 'app-btn text-zinc-300'
+            }" data-idx="${idx}">
+              ${trk.mute ? 'MUTED' : 'MUTE'}
+            </button>
+            <button class="btn-mixer-solo touch-btn flex-1 py-1.5 rounded text-xs font-black border transition-all ${
+              trk.solo ? 'app-btn-accent glow-accent shadow' : 'app-btn text-zinc-300'
+            }" data-idx="${idx}">
+              ${trk.solo ? 'SOLO ON' : 'SOLO'}
+            </button>
+            <button class="btn-mixer-edit touch-btn px-3 py-1.5 rounded text-xs font-black bg-zinc-700 hover:bg-zinc-600 text-white" data-idx="${idx}" title="Apri nel Piano Roll">
+              EDIT
+            </button>
           </div>
         `;
+
         container.appendChild(card);
       });
 
-      container.querySelectorAll('.btn-mute').forEach(b => b.onclick = () => toggleMuteWithGroup(parseInt(b.dataset.idx)));
-      container.querySelectorAll('.btn-solo').forEach(b => b.onclick = () => toggleSolo(parseInt(b.dataset.idx)));
-      container.querySelectorAll('.grp-btn').forEach(b => b.onclick = () => {
-        pat.tracks[parseInt(b.dataset.idx)].group = b.dataset.grp;
-        renderTracksGrid();
+      container.querySelectorAll('.grp-select-btn').forEach(b => {
+        b.onclick = () => {
+          const idx = parseInt(b.dataset.idx);
+          const grp = b.dataset.grp;
+          pat.tracks[idx].group = grp;
+          renderTracksGrid();
+          showToast(`Traccia ${idx + 1} assegnata a [${grp}]`);
+        };
       });
-      container.querySelectorAll('.btn-edit').forEach(b => b.onclick = () => {
-        project.selectedTrackIndex = parseInt(b.dataset.idx);
-        switchView('editor');
+
+      container.querySelectorAll('.btn-mixer-clock').forEach(b => {
+        b.onclick = () => toggleClockOnly(parseInt(b.dataset.idx));
       });
-    }
 
-    function toggleMuteWithGroup(trackIdx) {
-      const pat = project.patterns[project.activePattern];
-      const target = pat.tracks[trackIdx];
-      const newMute = !target.mute;
-      if (target.group !== 'FREE') {
-        pat.tracks.forEach(t => { if (t.group === target.group) t.mute = newMute; });
-      } else {
-        target.mute = newMute;
-      }
-      renderTracksGrid();
-    }
+      container.querySelectorAll('.btn-mixer-mute').forEach(b => {
+        b.onclick = () => toggleTrackMuteWithGroup(parseInt(b.dataset.idx));
+      });
+      container.querySelectorAll('.btn-mixer-solo').forEach(b => {
+        b.onclick = () => toggleTrackSoloWithGroup(parseInt(b.dataset.idx));
+      });
 
-    function toggleSolo(trackIdx) {
-      const pat = project.patterns[project.activePattern];
-      pat.tracks[trackIdx].solo = !pat.tracks[trackIdx].solo;
-      renderTracksGrid();
-      updateEditorSoloState();
+      container.querySelectorAll('.btn-mixer-edit').forEach(b => {
+        b.onclick = () => {
+          project.selectedTrackIndex = parseInt(b.dataset.idx);
+          switchView('editor');
+        };
+      });
     }
 
     // ==========================================
-    // PIANO ROLL & VELOCITY ENGINE
+    // PIANO ROLL & TOUCH / WHEEL SCROLL
     // ==========================================
     const canvas = document.getElementById('dawCanvas');
     const ctx = canvas.getContext('2d');
@@ -842,16 +1203,21 @@
     let octaveOffset = 48;
     let isDraggingKeys = false;
     let dragStartY = 0;
+
     let activeDrawingNote = null;
     let selectedNotes = [];
 
-    // Stato Maniglie di Ridimensionamento
-    let resizingMode = null; // 'left' | 'right' | null
-    let resizeTargetNote = null;
-    let resizeInitialStep = 0;
-    let resizeInitialLen = 1;
+    let isBoxSelecting = false;
+    let boxSelectStart = { x: 0, y: 0 };
+    let boxSelectCurrent = { x: 0, y: 0 };
 
-    // Stato Velocity Lane
+    // Gestione trascinamento di gruppo
+    let dragOperation = null; // 'move-group' | 'resize-left' | 'resize-right' | null
+    let dragTargetNote = null;
+    let dragStartPointerStep = 0;
+    let dragStartPointerNote = 0;
+    let groupSnapshots = []; // Posizioni originali del gruppo selezionato
+
     let velocityVisible = false;
     let isDraggingVelocity = false;
 
@@ -869,14 +1235,54 @@
       document.getElementById('edTrackNameInput').value = trk.name;
       document.getElementById('edTrackMidiChSelect').value = trk.ch;
       document.getElementById('edTrackTypeSelect').value = trk.type;
+      document.getElementById('edTrackColorPicker').value = trk.color || '#f59e0b';
+      document.getElementById('inputPatSteps').value = pat.steps || 64;
+      updateEditorClockOnlyState();
     }
+
+    document.getElementById('selNoteGate').onchange = (e) => {
+      project.noteGateRatio = parseFloat(e.target.value) || 0.90;
+      showToast(`Gate: ${Math.round(project.noteGateRatio * 100)}%`);
+    };
+
+    function setPatternSteps(steps) {
+      const val = Math.max(1, Math.min(128, parseInt(steps) || 64));
+      const pat = project.patterns[project.activePattern];
+      pat.steps = val;
+      document.getElementById('inputPatSteps').value = val;
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
+      renderDawTimeline();
+      showToast(`Durata: ${val} step`);
+    }
+
+    document.getElementById('inputPatSteps').onchange = (e) => setPatternSteps(e.target.value);
+    document.getElementById('btnPatStepInc').onclick = () => {
+      const pat = project.patterns[project.activePattern];
+      setPatternSteps((pat.steps || 64) + 1);
+    };
+    document.getElementById('btnPatStepDec').onclick = () => {
+      const pat = project.patterns[project.activePattern];
+      setPatternSteps((pat.steps || 64) - 1);
+    };
+    document.querySelectorAll('.btn-step-preset').forEach(b => {
+      b.onclick = () => setPatternSteps(b.dataset.steps);
+    });
 
     document.getElementById('edTrackNameInput').onchange = (e) => {
       const newName = e.target.value.trim() || `Traccia ${project.selectedTrackIndex + 1}`;
       project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].name = newName);
       renderEditorTrackRail();
       renderTracksGrid();
-      showToast(`Rinominata: ${newName}`);
+    };
+
+    document.getElementById('edTrackColorPicker').oninput = (e) => {
+      const newColor = e.target.value;
+      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].color = newColor);
+      renderEditorTrackRail();
+      renderTracksGrid();
+      drawPianoRoll();
+      if (velocityVisible) drawVelocityLane();
     };
 
     document.getElementById('edTrackMidiChSelect').onchange = (e) => {
@@ -887,7 +1293,42 @@
       showToast(`Assegnato a MIDI CH ${newCh}`);
     };
 
-    // Toggle Tendina Velocity
+    document.getElementById('btnEdClockOnlyToggle').onclick = () => {
+      toggleClockOnly(project.selectedTrackIndex);
+    };
+
+    document.getElementById('btnUndo').onclick = applyUndo;
+    document.getElementById('btnRedo').onclick = applyRedo;
+    document.getElementById('btnCopy').onclick = copyNotes;
+    document.getElementById('btnPaste').onclick = pasteNotes;
+    document.getElementById('btnDuplicate').onclick = duplicateNotes;
+
+    window.addEventListener('keydown', (e) => {
+      if (activeView !== 'editor') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+      if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); applyUndo(); }
+      if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); applyRedo(); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copyNotes(); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); pasteNotes(); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicateNotes(); }
+    });
+
+    document.getElementById('btnToggleSnap').onclick = () => {
+      project.snapEnabled = !project.snapEnabled;
+      const btn = document.getElementById('btnToggleSnap');
+      const lbl = document.getElementById('lblSnapStatus');
+      if (project.snapEnabled) {
+        btn.className = 'touch-btn px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white';
+        lbl.textContent = 'ON';
+        showToast("Snap ATTIVATO");
+      } else {
+        btn.className = 'touch-btn px-2 py-0.5 rounded text-[10px] font-black bg-zinc-700 text-zinc-300';
+        lbl.textContent = 'OFF';
+        showToast("Snap DISATTIVATO");
+      }
+    };
+
     document.getElementById('btnToggleVelocity').onclick = () => {
       velocityVisible = !velocityVisible;
       const velContainer = document.getElementById('velocityContainer');
@@ -895,12 +1336,11 @@
       if (velocityVisible) {
         velContainer.classList.remove('hidden');
         arrow.textContent = '▲';
-        setTimeout(resizeCanvas, 20);
       } else {
         velContainer.classList.add('hidden');
         arrow.textContent = '▼';
-        setTimeout(resizeCanvas, 20);
       }
+      setTimeout(resizeCanvas, 20);
     };
 
     function renderEditorTrackRail() {
@@ -912,34 +1352,82 @@
 
       pat.tracks.forEach((t, i) => {
         const isSel = project.selectedTrackIndex === i;
-        const btn = document.createElement('button');
-        btn.className = `touch-btn w-full p-2 rounded text-left border flex flex-col justify-between shrink-0 ${
-          isSel ? 'app-btn-accent glow-accent' : 'app-card app-border hover:border-zinc-500'
+        const card = document.createElement('div');
+        card.className = `w-full p-1.5 rounded text-left border flex flex-col justify-between shrink-0 transition-all ${
+          isSel ? 'app-panel border-amber-400 glow-accent' : 'app-card app-border hover:border-zinc-500'
         }`;
 
-        btn.innerHTML = `
-          <div class="flex justify-between items-center w-full">
-            <span class="font-black text-xs truncate ${isSel ? 'text-black' : 'text-zinc-100'}">${i + 1}. ${t.name}</span>
-            <span class="text-[9px] font-mono px-1 rounded ${isSel ? 'bg-black text-amber-400' : 'bg-zinc-800 text-zinc-400'}">CH ${t.ch}</span>
+        card.innerHTML = `
+          <div class="flex justify-between items-center w-full gap-1">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer btn-select-track">
+              <input type="color" class="track-item-color w-4 h-4 cursor-pointer bg-transparent border-0 rounded shrink-0" value="${t.color || '#f59e0b'}" data-idx="${i}" title="Cambia Colore Traccia">
+              <span class="font-black text-xs truncate ${isSel ? 'text-amber-400' : 'text-zinc-100'}">${i + 1}. ${t.name}</span>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button class="btn-rail-clock touch-btn text-[9px] font-mono font-bold px-1 py-0.5 rounded border ${
+                t.clockOnly ? 'bg-cyan-600 text-white border-cyan-400' : 'app-btn text-zinc-400'
+              }" data-idx="${i}">
+                ${t.clockOnly ? '⏱ CLK' : 'NOTE'}
+              </button>
+              <button class="btn-quick-ch touch-btn font-mono font-black text-xs px-2 py-0.5 rounded border shadow ${
+                isSel ? 'bg-amber-500 text-black border-amber-400' : 'app-btn border-zinc-600 text-amber-400 hover:border-amber-400'
+              }" data-idx="${i}">
+                CH ${t.ch}
+              </button>
+            </div>
           </div>
-          <div class="flex justify-between items-center text-[9px] mt-1 font-bold ${isSel ? 'text-black/80' : 'text-zinc-400'}">
+
+          <div class="flex justify-between items-center text-[9px] mt-1 font-bold text-zinc-400 cursor-pointer btn-select-track">
             <span>${t.type === 'drum' ? '🥁 DRUM' : '🎹 INST'}</span>
-            <span>NOTE: <b>${t.notes.length}</b></span>
+            <span>GRP: <b class="text-amber-400">${t.group}</b> | NOTE: <b class="text-zinc-200">${t.notes.length}</b></span>
           </div>
         `;
 
-        btn.onclick = () => {
-          project.selectedTrackIndex = i;
-          selectedNotes = [];
-          updateSelectionStatus();
-          renderEditorTrackRail();
-          syncEditorHeaderValues();
-          autoCenterPianoRoll();
-          updateEditorSoloState();
+        card.querySelectorAll('.btn-select-track').forEach(el => {
+          el.onclick = () => {
+            project.selectedTrackIndex = i;
+            selectedNotes = [];
+            updateSelectionStatus();
+            renderEditorTrackRail();
+            syncEditorHeaderValues();
+            autoCenterPianoRoll();
+            updateEditorSoloState();
+            if (velocityVisible) drawVelocityLane();
+          };
+        });
+
+        const colorInput = card.querySelector('.track-item-color');
+        colorInput.oninput = (e) => {
+          const c = e.target.value;
+          project.patterns.forEach(p => p.tracks[i].color = c);
+          if (project.selectedTrackIndex === i) {
+            document.getElementById('edTrackColorPicker').value = c;
+          }
+          drawPianoRoll();
           if (velocityVisible) drawVelocityLane();
         };
 
-        rail.appendChild(btn);
+        const clkBtn = card.querySelector('.btn-rail-clock');
+        clkBtn.onclick = (e) => {
+          e.stopPropagation();
+          toggleClockOnly(i);
+        };
+
+        const chBtn = card.querySelector('.btn-quick-ch');
+        chBtn.onclick = (e) => {
+          e.stopPropagation();
+          const nextCh = (t.ch % 16) + 1;
+          project.patterns.forEach(p => p.tracks[i].ch = nextCh);
+          chBtn.textContent = `CH ${nextCh}`;
+          if (project.selectedTrackIndex === i) {
+            document.getElementById('edTrackMidiChSelect').value = nextCh;
+          }
+          renderTracksGrid();
+          showToast(`${t.name}: Canale impostato su CH ${nextCh}`);
+        };
+
+        rail.appendChild(card);
       });
     }
 
@@ -961,6 +1449,7 @@
     window.addEventListener('resize', resizeCanvas);
 
     function getGridSnapStep() {
+      if (!project.snapEnabled) return 0.25;
       const res = parseInt(document.getElementById('selGridRes').value);
       if (res === 32) return 0.5;
       if (res === 16) return 1;
@@ -969,16 +1458,17 @@
       return 1;
     }
 
+    // MODIFICA CRUCIALE: USA INVISIBLE PER NON FAR SALTARE IL LAYOUT
     function updateSelectionStatus() {
       const btnDel = document.getElementById('btnEdDeleteSelected');
       const btnDesel = document.getElementById('btnEdDeselectAll');
       if (selectedNotes.length > 0) {
-        btnDel.classList.remove('hidden');
-        btnDesel.classList.remove('hidden');
-        btnDel.textContent = `ELIMINA SELEZIONE (${selectedNotes.length})`;
+        btnDel.classList.remove('invisible');
+        btnDesel.classList.remove('invisible');
+        btnDel.textContent = `ELIMINA (${selectedNotes.length})`;
       } else {
-        btnDel.classList.add('hidden');
-        btnDesel.classList.add('hidden');
+        btnDel.classList.add('invisible');
+        btnDesel.classList.add('invisible');
       }
     }
 
@@ -1040,10 +1530,10 @@
             const y = padIdx * rowHeight;
             const isSelected = selectedNotes.includes(n);
 
-            ctx.fillStyle = isSelected ? '#38bdf8' : '#f97316';
+            ctx.fillStyle = isSelected ? '#38bdf8' : (trk.color || '#f97316');
             ctx.fillRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
             ctx.strokeStyle = isSelected ? '#ffffff' : '#ea580c';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = isSelected ? 2.5 : 1.5;
             ctx.strokeRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
 
             ctx.fillStyle = isSelected ? '#000' : '#fff';
@@ -1088,7 +1578,6 @@
           ctx.stroke();
         }
 
-        // Rendering Note con Maniglie di Resize ◀ e ▶
         trk.notes.forEach(n => {
           const rowIndex = numRows - 1 - (n.note - octaveOffset);
           if (rowIndex >= 0 && rowIndex < numRows && n.step < visibleSteps) {
@@ -1097,29 +1586,58 @@
             const w = Math.max(stepWidth * n.len - 2, 8);
             const isSelected = selectedNotes.includes(n);
 
-            ctx.fillStyle = isSelected ? '#38bdf8' : (pat.color || 'var(--accent-color, #f59e0b)');
+            ctx.fillStyle = isSelected ? '#38bdf8' : (trk.color || pat.color || '#f59e0b');
             ctx.fillRect(x + 1, y + 1, w, rowHeight - 2);
-            ctx.strokeStyle = isSelected ? '#ffffff' : '#b45309';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = isSelected ? '#ffffff' : '#00000088';
+            ctx.lineWidth = isSelected ? 2.5 : 1.5;
             ctx.strokeRect(x + 1, y + 1, w, rowHeight - 2);
 
-            // Freccetta Sinistra (◀)
             ctx.fillStyle = '#000000';
             ctx.font = '8px monospace font-black';
             ctx.fillText('◀', x + 2, y + 13);
 
-            // Freccetta Destra (▶)
             if (w > 18) {
               ctx.fillText('▶', x + w - 8, y + 13);
             }
 
-            // Testo Velocity
             if (w > 32) {
               ctx.font = '9px sans-serif font-black';
               ctx.fillText(`v${n.vel}`, x + 11, y + 13);
             }
           }
         });
+      }
+
+      const patEndStep = pat.steps || 64;
+      if (patEndStep <= visibleSteps) {
+        const endX = keyWidth + patEndStep * stepWidth;
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(endX, 0);
+        ctx.lineTo(endX, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '10px sans-serif font-black';
+        ctx.fillText(`FINE PATTERN (${patEndStep} ST)`, endX + 4, 14);
+      }
+
+      if (isBoxSelecting) {
+        const boxX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+        const boxY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+        const boxW = Math.abs(boxSelectCurrent.x - boxSelectStart.x);
+        const boxH = Math.abs(boxSelectCurrent.y - boxSelectStart.y);
+
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+        ctx.fillRect(boxX, boxY, boxW, boxH);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.strokeRect(boxX, boxY, boxW, boxH);
+        ctx.setLineDash([]);
       }
 
       if (project.isPlaying) {
@@ -1134,7 +1652,6 @@
       }
     }
 
-    // Disegno Lane Velocity (Grafico a barre)
     function drawVelocityLane() {
       if (!velocityVisible || !velCanvas) return;
       velCtx.clearRect(0, 0, velCanvas.width, velCanvas.height);
@@ -1148,7 +1665,6 @@
       const gridWidth = velCanvas.width - keyWidth;
       const stepWidth = gridWidth / visibleSteps;
 
-      // Sfondo linea tastiera
       velCtx.fillStyle = '#10131f';
       velCtx.fillRect(0, 0, keyWidth, velCanvas.height);
       velCtx.strokeStyle = '#262c44';
@@ -1160,7 +1676,6 @@
       velCtx.fillText('64', 10, velCanvas.height / 2 + 3);
       velCtx.fillText('1', 10, velCanvas.height - 4);
 
-      // Griglia verticale corrispondente ai passi
       for (let s = 0; s <= visibleSteps; s++) {
         const x = keyWidth + s * stepWidth;
         if (x > velCanvas.width) break;
@@ -1172,14 +1687,12 @@
         velCtx.stroke();
       }
 
-      // Linea orizzontale a metà (64)
       velCtx.strokeStyle = '#1e2638';
       velCtx.beginPath();
       velCtx.moveTo(keyWidth, velCanvas.height / 2);
       velCtx.lineTo(velCanvas.width, velCanvas.height / 2);
       velCtx.stroke();
 
-      // Barre delle note
       trk.notes.forEach(n => {
         if (n.step < visibleSteps) {
           const x = keyWidth + n.step * stepWidth;
@@ -1187,65 +1700,92 @@
           const y = velCanvas.height - barHeight - 2;
           const isSelected = selectedNotes.includes(n);
 
-          velCtx.fillStyle = isSelected ? '#38bdf8' : (pat.color || '#f59e0b');
+          velCtx.fillStyle = isSelected ? '#38bdf8' : (trk.color || pat.color || '#f59e0b');
           velCtx.fillRect(x + 2, y, Math.max(stepWidth - 4, 4), barHeight);
 
-          // Testina superiore
           velCtx.fillStyle = '#ffffff';
           velCtx.fillRect(x + 1, y, Math.max(stepWidth - 2, 6), 3);
         }
       });
     }
 
-    // Rileva se il tocco è avvenuto sui bordi (◀ / ▶)
-    function detectNoteEdgeHover(x, y) {
+    function detectNoteHit(x, y) {
       const pat = project.patterns[project.activePattern];
       const trk = pat.tracks[project.selectedTrackIndex];
-      if (trk.type === 'drum') return null;
-
-      const keyWidth = 55;
+      const isDrum = trk.type === 'drum';
+      const keyWidth = isDrum ? 85 : 55;
       const visibleSteps = project.zoomBars;
       const stepWidth = (canvas.width - keyWidth) / visibleSteps;
-      const rowHeight = 20;
+      const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
       const numRows = Math.floor(canvas.height / rowHeight);
 
-      const HANDLE_SIZE = 12; // pixel del bordo sensibile
+      const HANDLE_SIZE = 12;
 
       for (let n of trk.notes) {
-        const rowIndex = numRows - 1 - (n.note - octaveOffset);
+        const rowIndex = isDrum ? (n.note - 36) : (numRows - 1 - (n.note - octaveOffset));
         if (rowIndex < 0 || rowIndex >= numRows) continue;
 
         const noteX = keyWidth + n.step * stepWidth;
         const noteY = rowIndex * rowHeight;
-        const noteW = Math.max(stepWidth * n.len - 2, 8);
+        const noteW = Math.max(stepWidth * (n.len || 1) - 2, 8);
 
-        if (y >= noteY && y <= noteY + rowHeight) {
-          // Bordo Sinistro
-          if (x >= noteX && x <= noteX + HANDLE_SIZE) {
-            return { note: n, edge: 'left' };
+        if (x >= noteX && x <= noteX + noteW && y >= noteY && y <= noteY + rowHeight) {
+          if (!isDrum) {
+            if (x <= noteX + HANDLE_SIZE) return { note: n, part: 'resize-left' };
+            if (x >= noteX + noteW - HANDLE_SIZE) return { note: n, part: 'resize-right' };
           }
-          // Bordo Destro
-          if (x >= noteX + noteW - HANDLE_SIZE && x <= noteX + noteW + 4) {
-            return { note: n, edge: 'right' };
-          }
+          return { note: n, part: 'move' };
         }
       }
       return null;
     }
 
-    // Gestione Mouse Cursor sul Piano Roll
+    // 1. SCROLL ROTATA MOUSE SUI TASTI PIANOFORTE
+    canvas.addEventListener('wheel', e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pat = project.patterns[project.activePattern];
+      const trk = pat.tracks[project.selectedTrackIndex];
+      const keyWidth = trk.type === 'drum' ? 85 : 55;
+
+      // Se il mouse si trova sopra la tastiera
+      if (x < keyWidth && trk.type !== 'drum') {
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? -1 : 1;
+        octaveOffset = Math.max(12, Math.min(96, octaveOffset + direction * 2));
+        drawPianoRoll();
+      }
+    }, { passive: false });
+
     canvas.addEventListener('pointermove', e => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      if (!resizingMode && !isDraggingKeys && currentTool === 'draw') {
-        const hit = detectNoteEdgeHover(x, y);
-        canvas.style.cursor = hit ? 'ew-resize' : 'crosshair';
+      const pat = project.patterns[project.activePattern];
+      const trk = pat.tracks[project.selectedTrackIndex];
+      const keyWidth = trk.type === 'drum' ? 85 : 55;
+
+      if (x < keyWidth && trk.type !== 'drum') {
+        canvas.style.cursor = 'ns-resize';
+        return;
+      }
+
+      if (!dragOperation && !isDraggingKeys && !isBoxSelecting) {
+        const hit = detectNoteHit(x, y);
+        if (hit) {
+          if (hit.part === 'resize-left' || hit.part === 'resize-right') {
+            canvas.style.cursor = 'ew-resize';
+          } else {
+            canvas.style.cursor = 'grab';
+          }
+        } else {
+          canvas.style.cursor = currentTool === 'select' ? 'default' : currentTool === 'draw' ? 'crosshair' : 'default';
+        }
       }
     });
 
-    // Pointerdown Piano Roll
+    // 2. SCROLL TOUCH CON DITA SU TASTIERA & SELEZIONE / SPOSTAMENTO MULTIPLO
     canvas.addEventListener('pointerdown', e => {
       ensureMidiReady();
 
@@ -1258,148 +1798,245 @@
       const isDrum = trk.type === 'drum';
       const keyWidth = isDrum ? 85 : 55;
 
+      // Scroll Touch Tastiera
       if (x < keyWidth) {
         if (!isDrum) {
           isDraggingKeys = true;
           dragStartY = y;
+          try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+          canvas.style.cursor = 'ns-resize';
         }
-        return;
-      }
-
-      // 1. Controlla se abbiamo toccato un bordo per ridimensionare
-      const edgeHit = detectNoteEdgeHover(x, y);
-      if (edgeHit && currentTool === 'draw') {
-        resizingMode = edgeHit.edge;
-        resizeTargetNote = edgeHit.note;
-        resizeInitialStep = edgeHit.note.step;
-        resizeInitialLen = edgeHit.note.len;
         return;
       }
 
       const visibleSteps = project.zoomBars;
       const stepWidth = (canvas.width - keyWidth) / visibleSteps;
-      const clickedStep = Math.floor((x - keyWidth) / stepWidth);
+      const clickedStepPrecise = (x - keyWidth) / stepWidth;
+      const clickedStep = Math.floor(clickedStepPrecise);
 
-      let clickedNote = 60;
-      if (isDrum) {
-        const rowHeight = Math.max(22, Math.floor(canvas.height / 16));
-        const padIdx = Math.floor(y / rowHeight);
-        clickedNote = 36 + Math.max(0, Math.min(15, padIdx));
-      } else {
-        const rowHeight = 20;
-        const numRows = Math.floor(canvas.height / rowHeight);
-        const clickedRow = Math.floor(y / rowHeight);
-        clickedNote = octaveOffset + (numRows - 1 - clickedRow);
+      const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
+      const numRows = Math.floor(canvas.height / rowHeight);
+      const clickedRow = Math.floor(y / rowHeight);
+      const clickedNote = isDrum ? (36 + Math.max(0, Math.min(15, clickedRow))) : (octaveOffset + (numRows - 1 - clickedRow));
+
+      const hit = detectNoteHit(x, y);
+
+      if (hit && (currentTool === 'draw' || currentTool === 'select')) {
+        pushHistoryState();
+
+        // Se la nota cliccata non fa parte della selezione corrente, seleziona solo lei
+        if (!selectedNotes.includes(hit.note)) {
+          selectedNotes = [hit.note];
+          updateSelectionStatus();
+          drawPianoRoll();
+        }
+
+        dragOperation = hit.part === 'move' ? 'move-group' : hit.part;
+        dragTargetNote = hit.note;
+        dragStartPointerStep = clickedStepPrecise;
+        dragStartPointerNote = clickedNote;
+
+        // Salva le posizioni iniziali di tutte le note del gruppo per muoverle insieme
+        groupSnapshots = selectedNotes.map(n => ({
+          noteRef: n,
+          origStep: n.step,
+          origNote: n.note,
+          origLen: n.len
+        }));
+
+        canvas.style.cursor = hit.part === 'move' ? 'grabbing' : 'ew-resize';
+        return;
+      }
+
+      if (currentTool === 'select' && !hit) {
+        isBoxSelecting = true;
+        boxSelectStart = { x, y };
+        boxSelectCurrent = { x, y };
+        selectedNotes = [];
+        updateSelectionStatus();
+        drawPianoRoll();
+        return;
       }
 
       if (currentTool === 'draw') {
-        const existingIdx = trk.notes.findIndex(n => n.step === clickedStep && n.note === clickedNote);
-        if (existingIdx !== -1) {
-          trk.notes.splice(existingIdx, 1);
-          activeDrawingNote = null;
-        } else {
-          const snap = getGridSnapStep();
-          const newNote = { step: clickedStep, note: clickedNote, len: isDrum ? 1 : Math.max(1, snap), vel: 110 };
-          trk.notes.push(newNote);
-          activeDrawingNote = newNote;
-          playInternalSound(trk.type, clickedNote, 110, 0.2);
+        pushHistoryState();
+
+        const snap = getGridSnapStep();
+        const snappedStep = project.snapEnabled ? Math.floor(clickedStep / snap) * snap : Math.floor(clickedStep);
+        const newNote = { step: snappedStep, note: clickedNote, len: isDrum ? 1 : Math.max(1, snap), vel: 110 };
+        trk.notes.push(newNote);
+        activeDrawingNote = newNote;
+        playInternalSound(trk.type, clickedNote, 110, 0.2);
+
+        if (!trk.clockOnly) {
           sendMidiNoteOn(trk.ch, clickedNote, 110);
           setTimeout(() => sendMidiNoteOff(trk.ch, clickedNote), 200);
         }
+        triggerChannelMeter(project.selectedTrackIndex, 110);
+
         drawPianoRoll();
         if (velocityVisible) drawVelocityLane();
       } else if (currentTool === 'eraser') {
+        pushHistoryState();
+
         trk.notes = trk.notes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
         selectedNotes = selectedNotes.filter(n => !(clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len));
         updateSelectionStatus();
         drawPianoRoll();
         if (velocityVisible) drawVelocityLane();
-      } else if (currentTool === 'select') {
-        const found = trk.notes.find(n => clickedNote === n.note && clickedStep >= n.step && clickedStep < n.step + n.len);
-        if (found) {
-          const selIdx = selectedNotes.indexOf(found);
-          if (selIdx !== -1) {
-            selectedNotes.splice(selIdx, 1);
-          } else {
-            selectedNotes.push(found);
-            playInternalSound(trk.type, found.note, found.vel, 0.15);
-            sendMidiNoteOn(trk.ch, found.note, found.vel);
-            setTimeout(() => sendMidiNoteOff(trk.ch, found.note), 150);
-          }
-          updateSelectionStatus();
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        }
       }
     });
 
-    // Pointermove per trascinamento note e resize con maniglie
     canvas.addEventListener('pointermove', e => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
+      // Trascina dita per scrollare la tastiera su touch
       if (isDraggingKeys) {
-        const delta = Math.floor((dragStartY - y) / 14);
-        if (delta !== 0) {
-          octaveOffset = Math.max(12, Math.min(96, octaveOffset + delta));
+        const deltaY = y - dragStartY;
+        const stepThreshold = 8;
+        if (Math.abs(deltaY) >= stepThreshold) {
+          const semitones = Math.trunc(deltaY / stepThreshold);
+          octaveOffset = Math.max(12, Math.min(96, octaveOffset + semitones));
           dragStartY = y;
           drawPianoRoll();
         }
         return;
       }
 
-      const keyWidth = 55;
+      if (isBoxSelecting) {
+        boxSelectCurrent = { x, y };
+        const pat = project.patterns[project.activePattern];
+        const trk = pat.tracks[project.selectedTrackIndex];
+        const isDrum = trk.type === 'drum';
+        const keyWidth = isDrum ? 85 : 55;
+        const visibleSteps = project.zoomBars;
+        const stepWidth = (canvas.width - keyWidth) / visibleSteps;
+        const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
+        const numRows = Math.floor(canvas.height / rowHeight);
+
+        const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+        const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
+        const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+        const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
+
+        selectedNotes = trk.notes.filter(n => {
+          const rowIndex = isDrum ? (n.note - 36) : (numRows - 1 - (n.note - octaveOffset));
+          const noteX = keyWidth + n.step * stepWidth;
+          const noteY = rowIndex * rowHeight;
+          const noteW = Math.max(stepWidth * (n.len || 1) - 2, 8);
+          const noteH = rowHeight;
+
+          return !(noteX + noteW < minX || noteX > maxX || noteY + noteH < minY || noteY > maxY);
+        });
+
+        updateSelectionStatus();
+        drawPianoRoll();
+        return;
+      }
+
+      const pat = project.patterns[project.activePattern];
+      const trk = pat.tracks[project.selectedTrackIndex];
+      const isDrum = trk.type === 'drum';
+      const keyWidth = isDrum ? 85 : 55;
       const stepWidth = (canvas.width - keyWidth) / project.zoomBars;
       const currentStepPointer = (x - keyWidth) / stepWidth;
       const snap = getGridSnapStep();
 
-      // Ridimensionamento tramite Maniglia Sinistra (◀) o Destra (▶)
-      if (resizingMode && resizeTargetNote) {
-        if (resizingMode === 'right') {
-          const newLen = Math.max(snap, Math.round((currentStepPointer - resizeTargetNote.step) / snap) * snap);
-          if (resizeTargetNote.len !== newLen) {
-            resizeTargetNote.len = newLen;
-            drawPianoRoll();
-          }
-        } else if (resizingMode === 'left') {
-          const snappedStep = Math.max(0, Math.round(currentStepPointer / snap) * snap);
-          const endStep = resizeInitialStep + resizeInitialLen;
-          if (snappedStep < endStep) {
-            resizeTargetNote.step = snappedStep;
-            resizeTargetNote.len = endStep - snappedStep;
-            drawPianoRoll();
-          }
+      // SPOSTAMENTO DI GRUPPO / MULTIPLO INSIEME
+      if (dragOperation === 'move-group' && groupSnapshots.length > 0) {
+        let deltaStepRaw = currentStepPointer - dragStartPointerStep;
+        let deltaStep = project.snapEnabled ? Math.round(deltaStepRaw / snap) * snap : Math.round(deltaStepRaw * 10) / 10;
+
+        const rowHeight = isDrum ? Math.max(22, Math.floor(canvas.height / 16)) : 20;
+        const numRows = Math.floor(canvas.height / rowHeight);
+        const curRow = Math.floor(y / rowHeight);
+        const currentPointerNote = isDrum ? (36 + Math.max(0, Math.min(15, curRow))) : (octaveOffset + (numRows - 1 - curRow));
+        const deltaPitch = isDrum ? 0 : (currentPointerNote - dragStartPointerNote);
+
+        // Verifica che nessuna nota sfori i limiti (0 step, 12-108 pitch, max steps)
+        let canMove = true;
+        for (let snapItem of groupSnapshots) {
+          const testStep = snapItem.origStep + deltaStep;
+          const testPitch = snapItem.origNote + deltaPitch;
+          if (testStep < 0 || testStep + snapItem.origLen > pat.steps) canMove = false;
+          if (testPitch < 12 || testPitch > 108) canMove = false;
+        }
+
+        if (canMove) {
+          groupSnapshots.forEach(snapItem => {
+            snapItem.noteRef.step = snapItem.origStep + deltaStep;
+            snapItem.noteRef.note = snapItem.origNote + deltaPitch;
+          });
+          drawPianoRoll();
+          if (velocityVisible) drawVelocityLane();
         }
         return;
       }
 
-      // Drag estensione normale durante il DRAW
-      if (currentTool === 'draw' && activeDrawingNote) {
-        const pat = project.patterns[project.activePattern];
-        const trk = pat.tracks[project.selectedTrackIndex];
-        if (trk.type !== 'drum') {
-          const pointerStep = Math.floor(currentStepPointer);
-          const rawLen = Math.max(snap, pointerStep - activeDrawingNote.step + 1);
-          const snappedLen = Math.max(snap, Math.round(rawLen / snap) * snap);
+      if (dragOperation === 'resize-right' && dragTargetNote) {
+        let newLen = currentStepPointer - dragTargetNote.step;
+        if (project.snapEnabled) {
+          newLen = Math.max(snap, Math.round(newLen / snap) * snap);
+        } else {
+          newLen = Math.max(0.25, Math.round(newLen * 10) / 10);
+        }
+        if (dragTargetNote.len !== newLen) {
+          dragTargetNote.len = newLen;
+          drawPianoRoll();
+          if (velocityVisible) drawVelocityLane();
+        }
+        return;
+      }
 
+      if (dragOperation === 'resize-left' && dragTargetNote) {
+        let snappedStep = currentStepPointer;
+        if (project.snapEnabled) {
+          snappedStep = Math.max(0, Math.round(snappedStep / snap) * snap);
+        } else {
+          snappedStep = Math.max(0, Math.round(snappedStep * 10) / 10);
+        }
+        const noteEnd = groupSnapshots[0]?.origStep + groupSnapshots[0]?.origLen;
+        if (snappedStep < noteEnd) {
+          dragTargetNote.step = snappedStep;
+          dragTargetNote.len = noteEnd - snappedStep;
+          drawPianoRoll();
+          if (velocityVisible) drawVelocityLane();
+        }
+        return;
+      }
+
+      if (currentTool === 'draw' && activeDrawingNote) {
+        if (!isDrum) {
+          let rawLen = currentStepPointer - activeDrawingNote.step + 1;
+          let snappedLen = project.snapEnabled ? Math.max(snap, Math.round(rawLen / snap) * snap) : Math.max(0.25, rawLen);
           if (activeDrawingNote.len !== snappedLen) {
             activeDrawingNote.len = snappedLen;
             drawPianoRoll();
+            if (velocityVisible) drawVelocityLane();
           }
         }
       }
     });
 
-    window.addEventListener('pointerup', () => {
+    window.addEventListener('pointerup', (e) => {
+      if (isDraggingKeys && canvas) {
+        try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+      }
       isDraggingKeys = false;
       activeDrawingNote = null;
-      resizingMode = null;
-      resizeTargetNote = null;
+      dragOperation = null;
+      dragTargetNote = null;
+      groupSnapshots = [];
       isDraggingVelocity = false;
+      if (isBoxSelecting) {
+        isBoxSelecting = false;
+        drawPianoRoll();
+      }
+      if (canvas) canvas.style.cursor = currentTool === 'select' ? 'default' : currentTool === 'draw' ? 'crosshair' : 'default';
     });
 
-    // Interazione Diretta su Canvas Velocity
     function handleVelocityPointer(e) {
       const rect = velCanvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -1416,13 +2053,11 @@
       const stepWidth = (velCanvas.width - keyWidth) / visibleSteps;
       const clickedStep = Math.floor((x - keyWidth) / stepWidth);
 
-      // Calcola valore velocity 1 - 127 in base alla posizione verticale
       const clampedY = Math.max(2, Math.min(velCanvas.height - 4, y));
       const velVal = Math.max(1, Math.min(127, Math.round((1 - (clampedY / velCanvas.height)) * 127)));
 
       document.getElementById('lblCurrentVelHover').textContent = `VEL: ${velVal}`;
 
-      // Assegna alla nota corrispondente allo step
       const targetNote = trk.notes.find(n => clickedStep >= n.step && clickedStep < n.step + (n.len || 1));
       if (targetNote) {
         targetNote.vel = velVal;
@@ -1432,6 +2067,7 @@
     }
 
     velCanvas.addEventListener('pointerdown', e => {
+      pushHistoryState();
       isDraggingVelocity = true;
       handleVelocityPointer(e);
     });
@@ -1441,6 +2077,7 @@
     });
 
     document.getElementById('btnEdDeleteSelected').onclick = () => {
+      pushHistoryState();
       const trk = project.patterns[project.activePattern].tracks[project.selectedTrackIndex];
       trk.notes = trk.notes.filter(n => !selectedNotes.includes(n));
       selectedNotes = [];
@@ -1459,6 +2096,7 @@
     };
 
     document.getElementById('btnEdClear').onclick = () => {
+      pushHistoryState();
       project.patterns[project.activePattern].tracks[project.selectedTrackIndex].notes = [];
       selectedNotes = [];
       updateSelectionStatus();
@@ -1488,14 +2126,39 @@
       const btn = document.getElementById('btnEdSoloToggle');
       const lbl = document.getElementById('lblEdSolo');
       if (trk.solo) {
-        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn-accent glow-accent flex items-center gap-1';
+        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn-accent glow-accent flex items-center gap-1 shrink-0';
         lbl.textContent = 'SOLO ON';
       } else {
-        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1';
+        btn.className = 'touch-btn px-2.5 py-0.5 rounded text-xs font-black border app-btn flex items-center gap-1 shrink-0';
         lbl.textContent = 'SOLO';
       }
     }
 
+    // ==========================================
+    // EDITOR TEMI GRAFICI LIVE
+    // ==========================================
+    function applyCustomThemeColor(varName, color) {
+      document.documentElement.style.setProperty(varName, color);
+    }
+
+    document.getElementById('thmBgMain').oninput = (e) => applyCustomThemeColor('--bg-main', e.target.value);
+    document.getElementById('thmBgPanel').oninput = (e) => applyCustomThemeColor('--bg-panel', e.target.value);
+    document.getElementById('thmBgCard').oninput = (e) => applyCustomThemeColor('--bg-card', e.target.value);
+    document.getElementById('thmBorder').oninput = (e) => applyCustomThemeColor('--border-color', e.target.value);
+    document.getElementById('thmAccent').oninput = (e) => applyCustomThemeColor('--accent-color', e.target.value);
+
+    document.querySelectorAll('.theme-select-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.documentElement.style = "";
+        document.body.className = `flex flex-col h-screen w-screen overflow-hidden select-none theme-${btn.dataset.theme}`;
+        showToast(`Tema attivo: ${btn.textContent}`);
+        drawPianoRoll();
+      };
+    });
+
+    // ==========================================
+    // CHAINER & SONG TIMELINE
+    // ==========================================
     function renderChainSlots() {
       const container = document.getElementById('chainSlotsContainer');
       if (!container) return;
@@ -1534,7 +2197,6 @@
           e.stopPropagation();
           project.chain.splice(parseInt(b.dataset.idx), 1);
           renderChainSlots();
-          renderDawTimeline();
         };
       });
       container.querySelectorAll('.btn-loop-mult').forEach(b => {
@@ -1542,31 +2204,6 @@
           const s = project.chain[parseInt(b.dataset.idx)];
           s.loops = s.loops === 1 ? 2 : s.loops === 2 ? 4 : 1;
           renderChainSlots();
-          renderDawTimeline();
-        };
-      });
-      container.querySelectorAll('.btn-move-left').forEach(b => {
-        b.onclick = () => {
-          const i = parseInt(b.dataset.idx);
-          if (i > 0) {
-            const temp = project.chain[i];
-            project.chain[i] = project.chain[i - 1];
-            project.chain[i - 1] = temp;
-            renderChainSlots();
-            renderDawTimeline();
-          }
-        };
-      });
-      container.querySelectorAll('.btn-move-right').forEach(b => {
-        b.onclick = () => {
-          const i = parseInt(b.dataset.idx);
-          if (i < project.chain.length - 1) {
-            const temp = project.chain[i];
-            project.chain[i] = project.chain[i + 1];
-            project.chain[i + 1] = temp;
-            renderChainSlots();
-            renderDawTimeline();
-          }
         };
       });
     }
@@ -1585,7 +2222,6 @@
         btn.onclick = () => {
           project.chain.push({ pat: idx, loops: 1 });
           renderChainSlots();
-          renderDawTimeline();
         };
         container.insertBefore(btn, resetBtn);
       });
@@ -1603,7 +2239,7 @@
         lane.className = 'app-card border rounded px-2 py-1 flex items-center justify-between text-[10px]';
         lane.innerHTML = `
           <div class="flex items-center gap-1.5 w-28 truncate">
-            <span class="w-1.5 h-1.5 rounded-full ${trk.mute ? 'bg-zinc-600' : 'bg-emerald-400'}"></span>
+            <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${trk.color || '#f59e0b'}"></span>
             <span class="font-bold text-zinc-200 truncate">${trk.name}</span>
           </div>
           <div class="flex-1 mx-2 h-2.5 bg-black/60 rounded overflow-hidden relative border app-border">
@@ -1644,47 +2280,15 @@
           </div>
           <div class="flex items-center gap-1.5 mt-1">
             <button class="btn-open-pat touch-btn flex-1 py-1 rounded app-btn border text-[11px] font-black" data-idx="${idx}">✏ EDIT</button>
-            <div class="flex gap-0.5">
-              <button class="btn-add-x touch-btn px-2 py-1 rounded app-btn-accent text-[10px] font-black" data-idx="${idx}" data-mult="1">+x1</button>
-              <button class="btn-add-x touch-btn px-2 py-1 rounded app-btn-accent text-[10px] font-black" data-idx="${idx}" data-mult="2">+x2</button>
-              <button class="btn-add-x touch-btn px-2 py-1 rounded app-btn-accent text-[10px] font-black" data-idx="${idx}" data-mult="4">+x4</button>
-            </div>
           </div>
         `;
         deck.appendChild(card);
-      });
-
-      deck.querySelectorAll('.pat-rename-input').forEach(input => {
-        input.onchange = (e) => {
-          project.patterns[parseInt(e.target.dataset.idx)].name = e.target.value;
-          renderPatAddButtons();
-          renderDawTimeline();
-        };
-      });
-
-      deck.querySelectorAll('.pat-color-picker').forEach(p => {
-        p.onchange = (e) => {
-          project.patterns[parseInt(e.target.dataset.idx)].color = e.target.value;
-          renderPatternsDeck();
-          renderDawTimeline();
-        };
       });
 
       deck.querySelectorAll('.btn-open-pat').forEach(b => {
         b.onclick = () => {
           project.activePattern = parseInt(b.dataset.idx);
           switchView('editor');
-          showToast(`Pattern [${project.patterns[project.activePattern].name}] selezionato`);
-        };
-      });
-
-      deck.querySelectorAll('.btn-add-x').forEach(b => {
-        b.onclick = () => {
-          const idx = parseInt(b.dataset.idx);
-          const mult = parseInt(b.dataset.mult);
-          project.chain.push({ pat: idx, loops: mult });
-          renderDawTimeline();
-          renderChainSlots();
         };
       });
     }
@@ -1693,7 +2297,6 @@
       const container = document.getElementById('dawTimelineTrack');
       if (!container) return;
       container.innerHTML = '';
-
       let totalSongSteps = 0;
 
       project.chain.forEach((slot, idx) => {
@@ -1701,84 +2304,37 @@
         const slotSteps = pat.steps * slot.loops;
         totalSongSteps += slotSteps;
 
-        const blockWidthPx = Math.max(90, pat.steps * 1.8 * slot.loops);
         const block = document.createElement('div');
         block.className = `touch-btn shrink-0 h-32 rounded-lg border-2 app-card app-border p-2 flex flex-col justify-between shadow relative overflow-hidden`;
-        block.style.width = `${blockWidthPx}px`;
+        block.style.width = `${Math.max(90, pat.steps * 1.8 * slot.loops)}px`;
         block.style.borderColor = pat.color || '#f59e0b';
 
         block.innerHTML = `
           <div class="flex justify-between items-center border-b app-border pb-1">
             <span class="font-black text-xs truncate" style="color: ${pat.color || '#f59e0b'}">${pat.name}</span>
-            <button class="btn-toggle-timeline-mult text-[9px] font-mono app-btn px-1.5 py-0.5 rounded font-bold" data-idx="${idx}">x${slot.loops}</button>
+            <span class="text-[9px] font-mono app-btn px-1.5 py-0.5 rounded font-bold">x${slot.loops}</span>
           </div>
           <div class="flex justify-between items-center text-[10px] font-mono text-zinc-300">
             <span>${slotSteps} STEPS</span>
-            <div class="flex gap-1">
-              <button class="btn-dup-slot app-btn border px-1.5 py-0.5 rounded font-black" data-idx="${idx}">⎘</button>
-              <button class="btn-del-timeline app-btn border px-1.5 py-0.5 rounded font-black text-rose-400" data-idx="${idx}">✕</button>
-            </div>
           </div>
         `;
         container.appendChild(block);
       });
 
       document.getElementById('lblTotalSongSteps').textContent = totalSongSteps;
-
-      container.querySelectorAll('.btn-toggle-timeline-mult').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          const s = project.chain[parseInt(b.dataset.idx)];
-          s.loops = s.loops === 1 ? 2 : s.loops === 2 ? 4 : 1;
-          renderDawTimeline();
-          renderChainSlots();
-        };
-      });
-
-      container.querySelectorAll('.btn-dup-slot').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          const idx = parseInt(b.dataset.idx);
-          project.chain.splice(idx + 1, 0, { ...project.chain[idx] });
-          renderDawTimeline();
-          renderChainSlots();
-        };
-      });
-
-      container.querySelectorAll('.btn-del-timeline').forEach(b => {
-        b.onclick = (e) => {
-          e.stopPropagation();
-          project.chain.splice(parseInt(b.dataset.idx), 1);
-          renderDawTimeline();
-          renderChainSlots();
-        };
-      });
     }
-
-    document.getElementById('btnCreatePattern').onclick = () => {
-      const steps = parseInt(document.getElementById('selNewPatSteps').value) || 64;
-      const newId = project.patterns.length;
-      const colors = ["#f59e0b", "#38bdf8", "#22c55e", "#ec4899", "#a855f7"];
-      const newColor = colors[newId % colors.length];
-      const newName = `Pattern ${String.fromCharCode(65 + (newId % 26))}`;
-
-      project.patterns.push(createNewPatternObject(newId, newName, steps, newColor));
-      renderPatternsDeck();
-      renderPatAddButtons();
-      showToast(`Creato ${newName}`);
-    };
 
     let activeView = 'mixer';
     function switchView(viewName) {
       activeView = viewName;
       ['Mixer', 'Editor', 'Chainer', 'Scenes'].forEach(v => {
         document.getElementById(`view${v}`).classList.add('hidden');
-        document.getElementById(`tab${v}`).className = 'tab-btn px-2.5 py-1 rounded text-xs font-black text-zinc-400 hover:text-white';
+        document.getElementById(`tab${v}`).className = 'tab-btn px-3 py-1 rounded text-xs font-black text-zinc-400 hover:text-white';
       });
 
       const cap = viewName.charAt(0).toUpperCase() + viewName.slice(1);
       document.getElementById(`view${cap}`).classList.remove('hidden');
-      document.getElementById(`tab${cap}`).className = 'tab-btn px-2.5 py-1 rounded text-xs font-black app-btn-accent';
+      document.getElementById(`tab${cap}`).className = 'tab-btn px-3 py-1 rounded text-xs font-black app-btn-accent';
 
       if (viewName === 'mixer') renderTracksGrid();
       if (viewName === 'editor') {
@@ -1786,6 +2342,7 @@
         syncEditorHeaderValues();
         autoCenterPianoRoll();
         updateEditorSoloState();
+        updateEditorClockOnlyState();
         updateSelectionStatus();
         setTimeout(resizeCanvas, 30);
       }
@@ -1829,20 +2386,9 @@
     document.getElementById('toolSelect').onclick = () => setTool('select');
     document.getElementById('toolEraser').onclick = () => setTool('eraser');
 
-    document.getElementById('inputBpm').onchange = (e) => {
-      project.bpm = Math.max(40, Math.min(260, parseInt(e.target.value) || 120));
-      if (project.isPlaying) {
-        clearInterval(sequencerTimer);
-        sequencerTimer = setInterval(stepSequencerTick, (60000 / project.bpm) / 4);
-      }
-    };
-
-    document.getElementById('btnToggleAudio').onclick = () => {
-      project.internalAudioEnabled = !project.internalAudioEnabled;
-      const lbl = document.getElementById('lblAudioStatus');
-      lbl.textContent = project.internalAudioEnabled ? 'ON' : 'OFF (MIDI ONLY)';
-      lbl.className = project.internalAudioEnabled ? 'text-emerald-400 font-bold' : 'text-zinc-500 font-bold';
-      if (project.internalAudioEnabled) getAudioContext();
+    document.getElementById('btnEdSoloToggle').onclick = () => {
+      toggleTrackSoloWithGroup(project.selectedTrackIndex);
+      updateEditorSoloState();
     };
 
     document.getElementById('edTrackTypeSelect').onchange = (e) => {
@@ -1853,9 +2399,19 @@
       renderTracksGrid();
     };
 
-    document.getElementById('btnEdSoloToggle').onclick = () => {
-      toggleSolo(project.selectedTrackIndex);
+    document.getElementById('btnUnmuteAll').onclick = () => {
+      project.patterns[project.activePattern].tracks.forEach(t => t.mute = false);
+      renderTracksGrid();
+      renderEditorTrackRail();
+      showToast("Tutti i canali sono stati unmutati");
+    };
+
+    document.getElementById('btnClearSolo').onclick = () => {
+      project.patterns[project.activePattern].tracks.forEach(t => t.solo = false);
+      renderTracksGrid();
+      renderEditorTrackRail();
       updateEditorSoloState();
+      showToast("Tutti i canali Solo sono stati azzerati");
     };
 
     document.getElementById('btnSettings').onclick = () => {
@@ -1873,56 +2429,19 @@
 
     document.getElementById('btnTestNts1').onclick = () => {
       ensureMidiReady(() => {
-        const target = getTargetOutput();
-        if (!target) {
+        if (!midiAccess || midiAccess.outputs.size === 0) {
           showToast("Nessuna porta MIDI USB rilevata");
           return;
         }
         for (let ch = 1; ch <= 16; ch++) {
           setTimeout(() => {
             sendMidiNoteOn(ch, 60, 115);
+            triggerChannelMeter(ch - 1, 115);
             setTimeout(() => sendMidiNoteOff(ch, 60), 120);
           }, (ch - 1) * 180);
         }
-        showToast(`Test invio su: ${target.name} (CH 1-16)`);
+        showToast("Test invio in broadcast su tutte le porte (CH 1-16)");
       });
-    };
-
-    document.querySelectorAll('.theme-select-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.body.className = `flex flex-col h-screen w-screen overflow-hidden select-none theme-${btn.dataset.theme}`;
-        showToast(`Tema attivo: ${btn.textContent}`);
-        if (activeView === 'editor') {
-          drawPianoRoll();
-          if (velocityVisible) drawVelocityLane();
-        }
-      };
-    });
-
-    document.getElementById('btnClearChain').onclick = () => {
-      project.chain = [];
-      renderChainSlots();
-      renderDawTimeline();
-    };
-
-    document.getElementById('btnToggleSongMode').onclick = () => {
-      project.songMode = !project.songMode;
-      const lbl = document.getElementById('lblSongMode');
-      lbl.textContent = project.songMode ? 'SONG CHAIN ACTIVE' : 'PATTERN LOOP';
-      lbl.className = project.songMode ? 'text-amber-400 font-bold' : 'text-zinc-400';
-    };
-
-    document.getElementById('btnUnmuteAll').onclick = () => {
-      project.patterns[project.activePattern].tracks.forEach(t => t.mute = false);
-      renderTracksGrid();
-      renderEditorTrackRail();
-    };
-
-    document.getElementById('btnClearSolo').onclick = () => {
-      project.patterns[project.activePattern].tracks.forEach(t => t.solo = false);
-      renderTracksGrid();
-      renderEditorTrackRail();
-      updateEditorSoloState();
     };
 
     function bootApp() {
