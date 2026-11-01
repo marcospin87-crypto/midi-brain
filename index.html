@@ -15,77 +15,52 @@
       --bg-card: #181b2a;
       --border-color: #262c44;
       --accent-color: #f59e0b;
-      --accent-hover: #d97706;
       --text-main: #f3f4f6;
-      --text-muted: #94a3b8;
       --btn-bg: #1e2235;
       --btn-border: #333a56;
-      --grid-bg: #07080c;
     }
-
     body.theme-ableton {
       --bg-main: #1e1e1e;
       --bg-panel: #2b2b2b;
       --bg-card: #353535;
       --border-color: #484848;
       --accent-color: #f9b233;
-      --accent-hover: #e09b24;
       --text-main: #e2e8f0;
-      --text-muted: #a0aec0;
       --btn-bg: #3c3c3c;
       --btn-border: #525252;
-      --grid-bg: #141414;
     }
-
     body.theme-fl {
       --bg-main: #15171c;
       --bg-panel: #20232a;
       --bg-card: #292d36;
       --border-color: #3d4352;
       --accent-color: #ff6b2b;
-      --accent-hover: #e65618;
       --text-main: #f8fafc;
-      --text-muted: #94a3b8;
       --btn-bg: #323743;
       --btn-border: #4a5163;
-      --grid-bg: #0e1014;
     }
-
     body.theme-acid {
       --bg-main: #050b06;
       --bg-panel: #0d1a0e;
       --bg-card: #142716;
       --border-color: #1e3d22;
       --accent-color: #22c55e;
-      --accent-hover: #16a34a;
       --text-main: #f0fdf4;
-      --text-muted: #86efac;
       --btn-bg: #19331b;
       --btn-border: #28542c;
-      --grid-bg: #030603;
     }
-
     body.theme-blue {
       --bg-main: #050d1a;
       --bg-panel: #0a1a33;
       --bg-card: #10264b;
       --border-color: #1a3c75;
       --accent-color: #38bdf8;
-      --accent-hover: #0284c7;
       --text-main: #f0f9ff;
-      --text-muted: #7dd3fc;
       --btn-bg: #153261;
       --btn-border: #234c8f;
-      --grid-bg: #03070d;
     }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-    }
-
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
     html, body {
       background-color: var(--bg-main);
       color: var(--text-main);
@@ -96,48 +71,30 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-
     .app-panel { background-color: var(--bg-panel); border-color: var(--border-color); }
     .app-card { background-color: var(--bg-card); border-color: var(--border-color); }
     .app-btn { background-color: var(--btn-bg); border-color: var(--btn-border); color: var(--text-main); }
-    .app-btn:hover { border-color: var(--accent-color); }
     .app-btn-accent { background-color: var(--accent-color); color: #000 !important; font-weight: 800; }
     .app-border { border-color: var(--border-color); }
-
-    .glow-accent {
-      box-shadow: 0 0 12px var(--accent-color);
-    }
-
-    .touch-btn {
-      touch-action: manipulation;
-      transition: transform 0.06s ease, filter 0.06s ease;
-    }
-    .touch-btn:active {
-      transform: scale(0.96);
-      filter: brightness(1.25);
-    }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-main); }
-    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+    .glow-accent { box-shadow: 0 0 12px var(--accent-color); }
+    .touch-btn { touch-action: manipulation; transition: transform 0.06s ease, filter 0.06s ease; }
+    .touch-btn:active { transform: scale(0.96); filter: brightness(1.25); }
   </style>
 </head>
 <body class="flex flex-col h-screen w-screen overflow-hidden select-none">
 
-  <!-- TOP HEADER / TRANSPORT BAR -->
+  <!-- TRANSPORT / HEADER -->
   <header class="app-panel border-b px-2 py-1 flex items-center justify-between shrink-0 h-12 z-20 overflow-x-auto gap-2">
     <div class="flex items-center gap-2 shrink-0">
       <div class="flex items-center gap-1.5">
-        <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed" title="Tempo Clock"></span>
+        <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse" id="tempoLed"></span>
         <span class="font-black text-sm tracking-widest text-amber-500">BRAIN HW</span>
-        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700 transition-colors duration-75" id="midiActivityLed" title="Attività MIDI OUT"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700 transition-colors duration-75" id="midiActivityLed"></span>
         <span class="text-[10px] app-btn px-1.5 py-0.5 rounded font-mono border">16-TRK</span>
       </div>
 
       <div class="h-6 w-px app-border mx-0.5"></div>
 
-      <!-- Play / Stop -->
       <button id="btnPlay" class="touch-btn px-3 py-1 rounded bg-emerald-600 active:bg-emerald-500 text-white font-black text-xs flex items-center gap-1 shadow">
         <span>▶</span> PLAY
       </button>
@@ -145,24 +102,21 @@
         ■ STOP
       </button>
 
-      <!-- BPM -->
       <div class="flex items-center gap-1 app-card border px-1.5 py-0.5 rounded">
         <span class="text-[10px] text-zinc-400 font-bold">BPM</span>
         <input id="inputBpm" type="number" min="40" max="260" value="126" class="w-11 bg-transparent text-center font-mono font-bold text-xs text-amber-400 outline-none">
       </div>
 
-      <!-- Quantize Mode -->
       <button id="btnQuantizeToggle" class="touch-btn text-[10px] app-btn border px-2 py-1 rounded font-bold">
         SYNC: <span id="lblQuantize" class="text-amber-400">1/16</span>
       </button>
 
-      <!-- CONNETTI / STATO USB MIDI (SBLOCCA PERMESSI) -->
       <button id="btnConnectMidiDirect" class="touch-btn px-2.5 py-1 rounded bg-amber-500/20 border border-amber-500 text-amber-400 font-black text-xs flex items-center gap-1">
         🔌 <span id="lblDirectMidiStatus">CONNETTI USB MIDI</span>
       </button>
     </div>
 
-    <!-- Navigation Tabs -->
+    <!-- TABS -->
     <div class="flex items-center gap-1 shrink-0">
       <div class="flex app-card p-0.5 rounded border gap-1">
         <button id="tabMixer" class="tab-btn px-2.5 py-1 rounded text-xs font-black app-btn-accent">MIXER 16</button>
@@ -172,34 +126,28 @@
       </div>
     </div>
 
-    <!-- Right Controls: Audio MUTO di default, Panic & Settings -->
+    <!-- UTILITIES -->
     <div class="flex items-center gap-1.5 shrink-0">
       <button id="btnToggleAudio" class="touch-btn px-2 py-1 rounded text-[10px] font-bold border app-btn">
         AUDIO: <span id="lblAudioStatus" class="text-zinc-500 font-bold">OFF (MIDI ONLY)</span>
       </button>
-
-      <button id="btnPanic" title="All Notes Off" class="touch-btn px-2 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-[10px]">
+      <button id="btnPanic" class="touch-btn px-2 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-[10px]">
         PANIC
       </button>
-
       <button id="btnSettings" class="touch-btn px-2.5 py-1 rounded app-btn-accent border text-black font-black text-xs shadow flex items-center gap-1">
         ⚙ IMPOSTAZIONI
       </button>
     </div>
   </header>
 
-  <!-- MAIN VIEWPORT CONTAINER -->
+  <!-- MAIN VIEWPORT -->
   <main class="flex-1 relative overflow-hidden flex flex-col p-2 min-h-0">
 
-    <!-- 1. VIEW: 16-TRACK MIXER MATRIX -->
+    <!-- 1. MIXER -->
     <section id="viewMixer" class="view-panel h-full w-full flex flex-col">
       <div class="flex justify-between items-center mb-1.5 shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-black tracking-wider uppercase text-zinc-400">16 Canali Hardware Mixer</span>
-          <span class="text-[10px] app-btn border px-2 py-0.5 rounded">Tocca EDIT per aprire il Piano Roll</span>
-        </div>
+        <span class="text-xs font-black tracking-wider uppercase text-zinc-400">16 Canali Hardware Mixer</span>
         <div class="flex items-center gap-2 text-[10px]">
-          <span class="text-zinc-500 font-bold">GRUPPI MUTE/SOLO:</span>
           <button id="btnUnmuteAll" class="touch-btn px-2 py-0.5 app-btn border rounded">UNMUTE ALL</button>
           <button id="btnClearSolo" class="touch-btn px-2 py-0.5 app-btn border rounded">CLEAR SOLO</button>
         </div>
@@ -207,7 +155,7 @@
       <div id="tracksGrid" class="grid grid-cols-4 grid-rows-4 gap-2 flex-1 min-h-0 overflow-y-auto"></div>
     </section>
 
-    <!-- 2. VIEW: DAW PIANO ROLL -->
+    <!-- 2. PIANO ROLL -->
     <section id="viewEditor" class="view-panel h-full w-full flex flex-col hidden">
       <div class="app-panel border rounded-t px-2 py-1.5 flex items-center justify-between shrink-0 gap-2 overflow-x-auto">
         <div class="flex items-center gap-2 flex-wrap">
@@ -231,8 +179,8 @@
           </button>
 
           <select id="edTrackTypeSelect" class="app-btn border text-xs font-bold rounded px-1.5 py-0.5 outline-none">
-            <option value="synth">🎹 INST (Piano Melodico)</option>
-            <option value="drum">🥁 DRUM (16 Pad Matrix)</option>
+            <option value="synth">🎹 INST (Piano)</option>
+            <option value="drum">🥁 DRUM (16 Pad)</option>
           </select>
 
           <div class="h-5 w-px app-border"></div>
@@ -256,21 +204,17 @@
           <div class="flex items-center gap-1 text-[10px] font-black text-zinc-400">
             <span>ZOOM:</span>
             <select id="selZoomBars" class="app-btn border rounded px-1.5 py-0.5 outline-none font-mono text-amber-400 font-bold">
-              <option value="16">1 Bar (16 st)</option>
-              <option value="32">2 Bars (32 st)</option>
-              <option value="64" selected>4 Bars (64 st)</option>
-              <option value="128">8 Bars (128 st)</option>
+              <option value="16">1 Bar</option>
+              <option value="32">2 Bars</option>
+              <option value="64" selected>4 Bars</option>
+              <option value="128">8 Bars</option>
             </select>
           </div>
         </div>
 
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-xs text-zinc-300 font-bold hidden">
-            DESELEZIONA
-          </button>
-          <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black hidden">
-            ELIMINA SELEZIONE
-          </button>
+          <button id="btnEdDeselectAll" class="touch-btn px-2 py-0.5 app-btn border rounded text-xs text-zinc-300 font-bold hidden">DESELEZIONA</button>
+          <button id="btnEdDeleteSelected" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-black hidden">ELIMINA SELEZIONE</button>
           <button id="btnEdClear" class="touch-btn px-2 py-0.5 bg-rose-950 border border-rose-800 rounded text-xs text-rose-300 font-bold">CLEAR</button>
         </div>
       </div>
@@ -281,100 +225,59 @@
           <canvas id="dawCanvas" class="w-full h-full block"></canvas>
         </div>
       </div>
-
-      <div class="app-panel border-x border-b px-3 py-1 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
-        <div class="flex items-center gap-3">
-          <span><b>DRAW:</b> tocca per inserire/allungare nota</span>
-          <span>•</span>
-          <span><b>SELECT:</b> tocca per selezionare più note (tocca di nuovo per deselezionare)</span>
-        </div>
-        <div class="flex items-center gap-2 font-mono">
-          <span>SELEZIONATE: <b id="lblSelectedCount" class="text-cyan-400">0</b></span>
-          <span class="text-zinc-600">|</span>
-          <span>NOTE TOTALI: <b id="lblNoteCount" class="text-amber-400">0</b></span>
-        </div>
-      </div>
     </section>
 
-    <!-- 3. VIEW: PATTERN CHAINER & SONG MODE -->
+    <!-- 3. SONG CHAIN -->
     <section id="viewChainer" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
       <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-black tracking-wider text-amber-400">SONG CHAIN MASTER</span>
-            <button id="btnToggleSongMode" class="touch-btn px-3 py-1 rounded text-xs font-black app-btn border text-zinc-400">
-              MODALITÀ: <span id="lblSongMode" class="text-zinc-400">PATTERN LOOP</span>
-            </button>
-          </div>
-          <span class="text-[11px] text-zinc-400">Arrangiamento a blocchi sequenziali loopati.</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-black tracking-wider text-amber-400">SONG CHAIN MASTER</span>
+          <button id="btnToggleSongMode" class="touch-btn px-3 py-1 rounded text-xs font-black app-btn border text-zinc-400">
+            MODO: <span id="lblSongMode" class="text-zinc-400">PATTERN LOOP</span>
+          </button>
         </div>
-
         <div class="flex items-center gap-1.5" id="patAddButtonsContainer">
-          <span class="text-[10px] font-bold text-zinc-400">+ AGGIUNGI SLOT:</span>
-          <button id="btnClearChain" class="touch-btn px-2.5 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-xs ml-2">RESET CHAIN</button>
+          <button id="btnClearChain" class="touch-btn px-2.5 py-1 rounded bg-rose-950 border border-rose-800 text-rose-300 font-black text-xs">RESET CHAIN</button>
         </div>
       </div>
 
       <div class="app-card border rounded p-3 h-44 shrink-0 flex flex-col justify-between shadow-xl">
         <div class="flex justify-between items-center text-xs font-bold text-zinc-400 mb-1">
-          <div class="flex items-center gap-2">
-            <span class="text-white uppercase tracking-wider text-sm font-black">Timeline Slot Song:</span>
-            <span class="text-[10px] text-zinc-400">Tocca x1, x2, x4 per i loop o ◀ ▶ per spostare</span>
-          </div>
+          <span class="text-white uppercase tracking-wider text-sm font-black">Timeline Slot Song</span>
           <div>TOTALE SLOT: <b id="lblChainLength" class="text-amber-400 font-mono text-sm">0</b></div>
         </div>
         <div id="chainSlotsContainer" class="flex-1 flex items-center gap-3 overflow-x-auto py-1 min-h-0"></div>
       </div>
 
       <div class="flex-1 app-card border rounded p-2.5 flex flex-col overflow-hidden min-h-0">
-        <div class="flex justify-between items-center mb-1.5 shrink-0">
-          <span class="text-xs font-black tracking-wider uppercase text-zinc-300">LIVE MULTI-TRACK MONITOR</span>
-          <span class="text-[10px] text-zinc-400 font-mono">16 Canali Realtime</span>
-        </div>
+        <span class="text-xs font-black tracking-wider uppercase text-zinc-300 mb-1.5">LIVE MULTI-TRACK MONITOR</span>
         <div id="chainMonitorLanes" class="flex-1 grid grid-cols-2 gap-x-4 gap-y-1.5 overflow-hidden min-h-0"></div>
       </div>
     </section>
 
-    <!-- 4. VIEW: PATTERNS & TIMELINE DAW -->
+    <!-- 4. PATTERNS & TIMELINE -->
     <section id="viewScenes" class="view-panel h-full w-full flex flex-col gap-2.5 hidden">
       <div class="app-panel border rounded p-2.5 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-          <h2 class="text-xs font-black tracking-wider text-amber-400 uppercase">Pattern Manager & Timeline Song DAW</h2>
-          <span class="text-[11px] text-zinc-400">Configura pattern a durata libera, componi le tracce e componi la song.</span>
-        </div>
-
+        <h2 class="text-xs font-black tracking-wider text-amber-400 uppercase">Pattern Manager & Timeline Song DAW</h2>
         <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1 app-card border px-2 py-0.5 rounded text-xs">
-            <span class="text-[10px] text-zinc-400 font-bold">LUNGHEZZA:</span>
-            <select id="selNewPatSteps" class="app-btn border rounded px-1.5 py-0.5 font-mono text-amber-400 font-bold">
-              <option value="16">16 Step (1 Bar)</option>
-              <option value="32">32 Step (2 Bars)</option>
-              <option value="64" selected>64 Step (4 Bars)</option>
-              <option value="128">128 Step (8 Bars)</option>
-            </select>
-          </div>
-          <button id="btnCreatePattern" class="touch-btn px-3 py-1 rounded app-btn-accent text-xs">
-            + NUOVO PATTERN
-          </button>
+          <select id="selNewPatSteps" class="app-btn border rounded px-1.5 py-0.5 font-mono text-amber-400 font-bold text-xs">
+            <option value="16">16 Step (1 Bar)</option>
+            <option value="32">32 Step (2 Bars)</option>
+            <option value="64" selected>64 Step (4 Bars)</option>
+            <option value="128">128 Step (8 Bars)</option>
+          </select>
+          <button id="btnCreatePattern" class="touch-btn px-3 py-1 rounded app-btn-accent text-xs">+ NUOVO PATTERN</button>
         </div>
       </div>
 
       <div class="app-card border rounded p-2.5 shrink-0">
-        <div class="flex justify-between items-center text-[11px] font-bold text-zinc-400 mb-2">
-          <span>PATTERNS DISPONIBILI:</span>
-        </div>
         <div id="patternsDeck" class="flex items-center gap-3 overflow-x-auto pb-1"></div>
       </div>
 
       <div class="flex-1 app-card border rounded p-3 flex flex-col overflow-hidden min-h-0">
         <div class="flex justify-between items-center mb-2 shrink-0">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-black tracking-wider text-zinc-200 uppercase">ARRANGIAMENTO TIMELINE GLOBALE</span>
-            <span class="text-[10px] text-zinc-400">(Trascina per scorrere la song)</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs font-mono">
-            <span class="text-zinc-400">STEP TOTALI: <b id="lblTotalSongSteps" class="text-amber-400">0</b></span>
-          </div>
+          <span class="text-xs font-black tracking-wider text-zinc-200 uppercase">ARRANGIAMENTO TIMELINE GLOBALE</span>
+          <span class="text-zinc-400 text-xs font-mono">STEP TOTALI: <b id="lblTotalSongSteps" class="text-amber-400">0</b></span>
         </div>
         <div id="dawTimelineTrack" class="flex-1 app-panel border rounded p-2.5 flex items-center gap-2.5 overflow-x-auto relative min-h-0"></div>
       </div>
@@ -382,18 +285,17 @@
 
   </main>
 
-  <!-- MODAL: SETTINGS, MIDI HARDWARE & FILTRI AVANZATI -->
+  <!-- MODAL: SETTINGS -->
   <div id="modalSettings" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
     <div class="app-panel border rounded-lg w-[620px] max-w-[95vw] p-4 flex flex-col gap-3 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b app-border pb-2">
-        <h3 class="text-sm font-black text-amber-500 uppercase tracking-wider">Impostazioni MIDI USB & Sistema</h3>
+        <h3 class="text-sm font-black text-amber-500 uppercase tracking-wider">Impostazioni MIDI USB EtherSynth</h3>
         <button id="btnCloseSettings" class="touch-btn text-zinc-400 hover:text-white text-base">✕</button>
       </div>
 
-      <!-- Configurazione MIDI USB & Porte -->
       <div class="app-card border rounded p-2.5">
         <div class="flex justify-between items-center mb-2">
-          <span class="text-xs font-black text-amber-400 uppercase">Dispositivi MIDI USB Rilevati:</span>
+          <span class="text-xs font-black text-amber-400 uppercase">Dispositivi MIDI Rilevati:</span>
           <button id="btnTestNts1" class="touch-btn px-3 py-1.5 rounded bg-amber-500 text-black text-xs font-black shadow glow-accent">
             ⚡ TEST INVIO NOTE NTS-1 (CH 1-16)
           </button>
@@ -401,13 +303,13 @@
         
         <div class="grid grid-cols-2 gap-2 text-[11px]">
           <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT (Output Verso Korg NTS-1):</span>
+            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI OUT (Output Target):</span>
             <select id="selMidiOut" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
-              <option value="ALL">BROADCAST TUTTE LE PORTE USB</option>
+              <option value="AUTO">AUTO (Rileva Korg / USB Attivo)</option>
             </select>
           </div>
           <div>
-            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI IN (Controller / KeyStep):</span>
+            <span class="text-zinc-400 block mb-0.5 font-bold">Porta MIDI IN:</span>
             <select id="selMidiIn" class="w-full app-btn border rounded p-1.5 text-xs outline-none font-bold">
               <option value="ALL">RICEVI DA TUTTE LE PORTE</option>
             </select>
@@ -415,16 +317,15 @@
         </div>
 
         <div class="mt-2 text-[11px] text-zinc-300 flex items-center justify-between border-t app-border pt-1.5">
-          <div>Stato Web MIDI: <b id="lblUsbMidiStatus" class="text-emerald-400 font-mono">Pronto</b></div>
+          <div>Stato Web MIDI: <b id="lblUsbMidiStatus" class="text-emerald-400 font-mono">Inizializzazione</b></div>
           <button id="btnRescanMidi" class="touch-btn px-2.5 py-1 app-btn border rounded text-amber-400 font-black text-xs">
             ↻ RICHIEDI PERMESSI USB
           </button>
         </div>
       </div>
 
-      <!-- Filtri & Regole MIDI -->
       <div class="app-card border rounded p-2.5">
-        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Trasmissione Dati MIDI Hardware:</span>
+        <span class="text-xs font-black text-amber-400 uppercase block mb-1.5">Filtri MIDI Hardware:</span>
         <div class="grid grid-cols-2 gap-2 text-xs text-zinc-300">
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" id="chkSendNotes" checked class="rounded accent-amber-500">
@@ -434,18 +335,9 @@
             <input type="checkbox" id="chkSendCC" checked class="rounded accent-amber-500">
             <span>Invia Control Change (CC)</span>
           </label>
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" id="chkSendClock" checked class="rounded accent-amber-500">
-            <span>Invia Clock Realtime (0xF8)</span>
-          </label>
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" id="chkSendStartStop" checked class="rounded accent-amber-500">
-            <span>Invia Comandi Start/Stop (0xFA/0xFC)</span>
-          </label>
         </div>
       </div>
 
-      <!-- Temi Grafici -->
       <div>
         <label class="text-[11px] font-black text-zinc-400 uppercase block mb-1">Temi Grafici:</label>
         <div class="grid grid-cols-5 gap-1.5">
@@ -458,16 +350,14 @@
       </div>
 
       <div class="pt-2 border-t app-border flex justify-end">
-        <button id="btnSaveSettings" class="touch-btn px-4 py-1.5 rounded app-btn-accent text-xs">
-          CHIUDI & APPLICA
-        </button>
+        <button id="btnSaveSettings" class="touch-btn px-4 py-1.5 rounded app-btn-accent text-xs">CHIUDI & APPLICA</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="fixed bottom-3 right-3 app-panel border border-amber-500 text-amber-400 text-xs px-3 py-1.5 rounded shadow-xl pointer-events-none transition-opacity duration-200 opacity-0 z-50"></div>
 
-  <!-- SCRIPT DI CONTROLLO -->
+  <!-- JAVASCRIPT ENGINE ETHERSYNTH -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -505,10 +395,10 @@
       bpm: 126,
       isPlaying: false,
       activePattern: 0,
-      selectedTrackIndex: 4, // Korg NTS-1 default
+      selectedTrackIndex: 4,
       songMode: false,
       quantizeBar: true,
-      internalAudioEnabled: false, // MUTO DI DEFAULT: SOLO TRASMISSIONE MIDI
+      internalAudioEnabled: false,
       zoomBars: 64,
       chain: [
         { pat: 0, loops: 2 },
@@ -546,12 +436,11 @@
 
     let audioCtx = null;
     let midiAccess = null;
+    let selectedMidiOutput = null;
     let currentStep = 0;
     let sequencerTimer = null;
     let midiLedTimer = null;
-
-    // Tracciamento note attive senza saturazione buffer
-    let activeMidiNotes = new Map();
+    let activeVoices = new Map();
 
     function flashMidiLed() {
       const led = document.getElementById('midiActivityLed');
@@ -562,7 +451,7 @@
       midiLedTimer = setTimeout(() => {
         led.classList.remove('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
         led.classList.add('bg-zinc-700');
-      }, 50);
+      }, 45);
     }
 
     function getAudioContext() {
@@ -607,11 +496,24 @@
       } catch (err) {}
     }
 
-    // ==========================================
-    // SISTEMA TRASMISSIONE NTS-1 & USB-MIDI OTTIMIZZATO
-    // ==========================================
+    function getTargetOutput() {
+      if (!midiAccess || midiAccess.outputs.size === 0) return null;
+      const sel = document.getElementById('selMidiOut').value;
+      if (sel !== 'AUTO' && midiAccess.outputs.has(sel)) {
+        return midiAccess.outputs.get(sel);
+      }
+      let autoPort = null;
+      for (const [id, port] of midiAccess.outputs) {
+        const name = (port.name || '').toLowerCase();
+        if (name.includes('nts') || name.includes('korg')) return port;
+        if (!autoPort) autoPort = port;
+      }
+      return autoPort;
+    }
+
     function ensureMidiReady(callback) {
       if (midiAccess && midiAccess.outputs.size > 0) {
+        selectedMidiOutput = getTargetOutput();
         if (callback) callback();
         return;
       }
@@ -621,113 +523,85 @@
           updateMidiPortSelectors();
           m.onstatechange = updateMidiPortSelectors;
           
+          selectedMidiOutput = getTargetOutput();
           const portCount = m.outputs.size;
-          const statusText = portCount > 0 ? `USB OK (${portCount} OUT)` : "Nessun dispositivo USB rilevato";
-          document.getElementById('lblDirectMidiStatus').textContent = statusText;
-          document.getElementById('lblDirectMidiStatus').className = portCount > 0 ? "text-emerald-400 font-bold" : "text-amber-400";
-          document.getElementById('lblUsbMidiStatus').textContent = portCount > 0 ? `Connesso: ${portCount} porte attive` : "In attesa di cavo USB-OTG";
+          const targetName = selectedMidiOutput ? selectedMidiOutput.name : 'Nessuna';
           
-          if (portCount > 0) {
-            showToast(`USB MIDI Connesso (${portCount} porte)`);
-          } else {
-            showToast("Nessuna periferica MIDI trovata. Controlla il cavo USB");
-          }
+          const lbl = document.getElementById('lblDirectMidiStatus');
+          lbl.textContent = portCount > 0 ? `USB OK: ${targetName}` : "Nessun dispositivo USB";
+          lbl.className = portCount > 0 ? "text-emerald-400 font-bold" : "text-amber-400";
+          document.getElementById('lblUsbMidiStatus').textContent = portCount > 0 ? `Agganciato: ${targetName}` : "In attesa di cavo USB-OTG";
+          
+          showToast(portCount > 0 ? `Connesso: ${targetName}` : "Collega il Korg NTS-1 via USB-OTG");
           if (callback) callback();
-        }).catch(err => {
-          document.getElementById('lblUsbMidiStatus').textContent = "Permessi USB negati";
-          showToast("Errore: Consenti l'accesso MIDI nel browser");
+        }).catch(() => {
+          document.getElementById('lblUsbMidiStatus').textContent = "Permesso USB negato";
+          showToast("Consenti l'accesso MIDI nel popup");
         });
       } else {
-        showToast("Il browser non supporta Web MIDI");
+        showToast("Web MIDI non supportato dal browser");
       }
     }
 
     function sendMidiNoteOn(channel, note, velocity) {
       if (!document.getElementById('chkSendNotes').checked) return;
-      if (!midiAccess || midiAccess.outputs.size === 0) return;
+      const target = getTargetOutput();
+      if (!target) return;
 
       const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
       const vel = Math.max(1, Math.min(127, velocity || 100));
       const noteByte = note & 0x7F;
       const key = `${channel}_${note}`;
 
-      // Se era già accesa, rilascia il gate prima di riattivarlo
-      if (activeMidiNotes.has(key)) {
-        const item = activeMidiNotes.get(key);
-        if (item.timeoutId) clearTimeout(item.timeoutId);
+      if (activeVoices.has(key)) {
+        clearTimeout(activeVoices.get(key));
         sendMidiNoteOff(channel, note);
       }
 
-      // Korg NTS-1 standard: Note-On (0x90 | ch, note, vel)
-      const raw = [0x90 | ch, noteByte, vel];
-      const selectedOut = document.getElementById('selMidiOut').value;
-
-      if (selectedOut === 'ALL') {
-        midiAccess.outputs.forEach(port => {
-          try { port.send(raw); } catch (e) {}
-        });
-      } else {
-        const port = midiAccess.outputs.get(selectedOut);
-        if (port) {
-          try { port.send(raw); } catch (e) {}
-        }
-      }
-
-      activeMidiNotes.set(key, { channel, note, timeoutId: null });
-      flashMidiLed();
+      try {
+        target.send(new Uint8Array([0x90 | ch, noteByte, vel]));
+        activeVoices.set(key, null);
+        flashMidiLed();
+      } catch (err) {}
     }
 
     function sendMidiNoteOff(channel, note) {
-      if (!midiAccess || midiAccess.outputs.size === 0) return;
+      const target = getTargetOutput();
+      if (!target) return;
 
       const ch = Math.max(0, Math.min(15, (channel || 1) - 1));
       const noteByte = note & 0x7F;
       const key = `${channel}_${note}`;
 
-      activeMidiNotes.delete(key);
+      activeVoices.delete(key);
 
-      // Korg NTS-1 riceve con precisione assoluta il Note-On con velocity 0
-      const rawNoteZero = [0x90 | ch, noteByte, 0];
-      const selectedOut = document.getElementById('selMidiOut').value;
-
-      if (selectedOut === 'ALL') {
-        midiAccess.outputs.forEach(port => {
-          try { port.send(rawNoteZero); } catch (e) {}
-        });
-      } else {
-        const port = midiAccess.outputs.get(selectedOut);
-        if (port) {
-          try { port.send(rawNoteZero); } catch (e) {}
-        }
-      }
+      try {
+        target.send(new Uint8Array([0x90 | ch, noteByte, 0x00]));
+      } catch (err) {}
     }
 
     function sendMidiPanic() {
-      // 1. Spegni le note effettivamente rimaste aperte nel tracking
-      activeMidiNotes.forEach(val => {
-        if (val.timeoutId) clearTimeout(val.timeoutId);
-        const ch = Math.max(0, Math.min(15, (val.channel || 1) - 1));
-        const raw = [0x90 | ch, val.note & 0x7F, 0];
-        if (midiAccess) {
-          midiAccess.outputs.forEach(p => {
-            try { p.send(raw); } catch (e) {}
-          });
+      const target = getTargetOutput();
+      activeVoices.forEach((timerId, key) => {
+        if (timerId) clearTimeout(timerId);
+        const parts = key.split('_');
+        const ch = parseInt(parts[0]) - 1;
+        const note = parseInt(parts[1]);
+        if (target && !isNaN(ch) && !isNaN(note)) {
+          try { target.send(new Uint8Array([0x90 | (ch & 0x0F), note & 0x7F, 0x00])); } catch (e) {}
         }
       });
-      activeMidiNotes.clear();
+      activeVoices.clear();
 
-      if (!midiAccess) return;
-
-      // 2. Invia solo All Notes Off (CC 123) sui 16 canali senza sovraccaricare il buffer seriale
-      midiAccess.outputs.forEach(port => {
+      if (target) {
         for (let ch = 0; ch < 16; ch++) {
           try {
-            port.send([0xB0 | ch, 123, 0]); // All Notes Off
-            port.send([0xB0 | ch, 120, 0]); // All Sound Off
+            target.send(new Uint8Array([0xB0 | ch, 123, 0]));
+            target.send(new Uint8Array([0xB0 | ch, 120, 0]));
           } catch (e) {}
         }
-      });
-      showToast("Tutte le note azzerate");
+      }
+      showToast("MIDI Panic inviato");
     }
 
     function updateMidiPortSelectors() {
@@ -739,7 +613,7 @@
       const curOut = selOut.value;
       const curIn = selIn.value;
 
-      selOut.innerHTML = '<option value="ALL">BROADCAST TUTTE LE PORTE USB</option>';
+      selOut.innerHTML = '<option value="AUTO">AUTO (Rileva Korg / USB Attivo)</option>';
       selIn.innerHTML = '<option value="ALL">RICEVI DA TUTTE LE PORTE</option>';
 
       midiAccess.outputs.forEach(port => {
@@ -748,9 +622,7 @@
         opt.textContent = `${port.name} (${port.manufacturer || 'USB MIDI'})`;
         selOut.appendChild(opt);
       });
-      if (curOut && Array.from(selOut.options).some(o => o.value === curOut)) {
-        selOut.value = curOut;
-      }
+      if (curOut && Array.from(selOut.options).some(o => o.value === curOut)) selOut.value = curOut;
 
       midiAccess.inputs.forEach(port => {
         const opt = document.createElement('option');
@@ -759,14 +631,13 @@
         selIn.appendChild(opt);
         port.onmidimessage = handleIncomingMidi;
       });
-      if (curIn && Array.from(selIn.options).some(o => o.value === curIn)) {
-        selIn.value = curIn;
-      }
+      if (curIn && Array.from(selIn.options).some(o => o.value === curIn)) selIn.value = curIn;
 
+      selectedMidiOutput = getTargetOutput();
       const count = midiAccess.outputs.size;
       const lbl = document.getElementById('lblDirectMidiStatus');
-      if (count > 0) {
-        lbl.textContent = `USB OK (${count} OUT)`;
+      if (count > 0 && selectedMidiOutput) {
+        lbl.textContent = `USB: ${selectedMidiOutput.name}`;
         lbl.className = "text-emerald-400 font-bold";
       }
     }
@@ -785,7 +656,6 @@
       }
     }
 
-    // Step Sequencer Tick con gestione del gate pulita
     function stepSequencerTick() {
       const currentPat = project.patterns[project.activePattern];
       if (!currentPat) return;
@@ -810,9 +680,7 @@
               sendMidiNoteOff(targetChannel, n.note);
             }, dur * 1000 * 0.90);
 
-            if (activeMidiNotes.has(key)) {
-              activeMidiNotes.get(key).timeoutId = tId;
-            }
+            activeVoices.set(key, tId);
           }
         }
       }
@@ -857,7 +725,6 @@
       if (activeView === 'chainer') updateChainerPlayhead();
     }
 
-    // Mixer Render
     function renderTracksGrid() {
       const container = document.getElementById('tracksGrid');
       if (!container) return;
@@ -935,9 +802,6 @@
       updateEditorSoloState();
     }
 
-    // ==========================================
-    // PIANO ROLL ENGINE
-    // ==========================================
     const canvas = document.getElementById('dawCanvas');
     const ctx = canvas.getContext('2d');
     let currentTool = 'draw';
@@ -965,22 +829,18 @@
 
     document.getElementById('edTrackNameInput').onchange = (e) => {
       const newName = e.target.value.trim() || `Traccia ${project.selectedTrackIndex + 1}`;
-      project.patterns.forEach(p => {
-        p.tracks[project.selectedTrackIndex].name = newName;
-      });
+      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].name = newName);
       renderEditorTrackRail();
       renderTracksGrid();
-      showToast(`Traccia rinominata in: ${newName}`);
+      showToast(`Rinominata: ${newName}`);
     };
 
     document.getElementById('edTrackMidiChSelect').onchange = (e) => {
       const newCh = parseInt(e.target.value);
-      project.patterns.forEach(p => {
-        p.tracks[project.selectedTrackIndex].ch = newCh;
-      });
+      project.patterns.forEach(p => p.tracks[project.selectedTrackIndex].ch = newCh);
       renderEditorTrackRail();
       renderTracksGrid();
-      showToast(`Traccia assegnata a MIDI CH ${newCh}`);
+      showToast(`Assegnato a MIDI CH ${newCh}`);
     };
 
     function renderEditorTrackRail() {
@@ -1044,8 +904,7 @@
       const btnDel = document.getElementById('btnEdDeleteSelected');
       const btnDesel = document.getElementById('btnEdDeselectAll');
       const countLbl = document.getElementById('lblSelectedCount');
-
-      countLbl.textContent = selectedNotes.length;
+      if (countLbl) countLbl.textContent = selectedNotes.length;
       if (selectedNotes.length > 0) {
         btnDel.classList.remove('hidden');
         btnDesel.classList.remove('hidden');
@@ -1117,7 +976,7 @@
             ctx.fillStyle = isSelected ? '#38bdf8' : '#f97316';
             ctx.fillRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
             ctx.strokeStyle = isSelected ? '#ffffff' : '#ea580c';
-            ctx.lineWidth = isSelected ? 2.5 : 1;
+            ctx.lineWidth = 2.5;
             ctx.strokeRect(x + 1, y + 2, Math.max(stepWidth - 2, 6), rowHeight - 4);
 
             ctx.fillStyle = isSelected ? '#000' : '#fff';
@@ -1173,7 +1032,7 @@
             ctx.fillStyle = isSelected ? '#38bdf8' : (pat.color || 'var(--accent-color, #f59e0b)');
             ctx.fillRect(x + 1, y + 1, w, rowHeight - 2);
             ctx.strokeStyle = isSelected ? '#ffffff' : '#b45309';
-            ctx.lineWidth = isSelected ? 2.5 : 1;
+            ctx.lineWidth = 2.5;
             ctx.strokeRect(x + 1, y + 1, w, rowHeight - 2);
 
             ctx.fillStyle = '#000000';
@@ -1193,11 +1052,8 @@
         ctx.lineTo(playX, canvas.height);
         ctx.stroke();
       }
-
-      document.getElementById('lblNoteCount').textContent = trk.notes.length;
     }
 
-    // Pointer Events Piano Roll
     canvas.addEventListener('pointerdown', e => {
       ensureMidiReady();
 
@@ -1318,7 +1174,7 @@
       updateSelectionStatus();
       drawPianoRoll();
       renderEditorTrackRail();
-      showToast("Note selezionate eliminate");
+      showToast("Note eliminate");
     };
 
     document.getElementById('btnEdDeselectAll').onclick = () => {
@@ -1362,9 +1218,6 @@
       }
     }
 
-    // ==========================================
-    // CHAINER & TIMELINE DAW
-    // ==========================================
     function renderChainSlots() {
       const container = document.getElementById('chainSlotsContainer');
       if (!container) return;
@@ -1383,16 +1236,13 @@
             <span class="font-black text-xs text-amber-400 font-mono truncate">#${idx + 1} [${pat.name}]</span>
             <button class="btn-del-slot text-zinc-400 hover:text-rose-400 font-black text-sm" data-idx="${idx}">✕</button>
           </div>
-
           <div class="flex items-center justify-between text-[10px] text-zinc-300 font-bold">
             <span>STEP: ${pat.steps}</span>
             <span class="text-amber-400 font-mono">${pat.steps * slot.loops} TOT</span>
           </div>
-
           <button class="btn-loop-mult touch-btn py-1 rounded app-btn border text-center text-xs font-black text-amber-400" data-idx="${idx}">
             DURATA: x${slot.loops}
           </button>
-
           <div class="flex justify-between text-[10px] gap-1">
             <button class="btn-move-left flex-1 py-0.5 app-btn border rounded font-black" data-idx="${idx}">◀</button>
             <button class="btn-move-right flex-1 py-0.5 app-btn border rounded font-black" data-idx="${idx}">▶</button>
@@ -1506,8 +1356,6 @@
         const isActive = project.activePattern === idx;
         card.className = `touch-btn shrink-0 w-60 rounded-lg border-2 ${isActive ? 'border-amber-400 app-panel glow-accent' : 'app-card app-border'} p-2.5 flex flex-col justify-between`;
 
-        const totalNotes = pat.tracks.reduce((sum, t) => sum + t.notes.length, 0);
-
         card.innerHTML = `
           <div>
             <div class="flex justify-between items-center mb-1.5 gap-1">
@@ -1515,16 +1363,9 @@
               <input type="color" value="${pat.color || '#f59e0b'}" class="pat-color-picker w-5 h-5 rounded cursor-pointer border-0 bg-transparent" data-idx="${idx}">
               <span class="text-[10px] font-mono app-btn border px-1 rounded">${pat.steps} ST</span>
             </div>
-            <div class="text-[10px] text-zinc-400 mb-2 flex justify-between">
-              <span>Tracce piene: <b>${pat.tracks.filter(t => t.notes.length > 0).length}/16</b></span>
-              <span>Note: <b>${totalNotes}</b></span>
-            </div>
           </div>
-
           <div class="flex items-center gap-1.5 mt-1">
-            <button class="btn-open-pat touch-btn flex-1 py-1 rounded app-btn border text-[11px] font-black" data-idx="${idx}">
-              ✏ EDIT PIANO
-            </button>
+            <button class="btn-open-pat touch-btn flex-1 py-1 rounded app-btn border text-[11px] font-black" data-idx="${idx}">✏ EDIT</button>
             <div class="flex gap-0.5">
               <button class="btn-add-x touch-btn px-2 py-1 rounded app-btn-accent text-[10px] font-black" data-idx="${idx}" data-mult="1">+x1</button>
               <button class="btn-add-x touch-btn px-2 py-1 rounded app-btn-accent text-[10px] font-black" data-idx="${idx}" data-mult="2">+x2</button>
@@ -1566,7 +1407,6 @@
           project.chain.push({ pat: idx, loops: mult });
           renderDawTimeline();
           renderChainSlots();
-          showToast(`Aggiunto a Timeline: ${project.patterns[idx].name} (x${mult})`);
         };
       });
     }
@@ -1584,7 +1424,6 @@
         totalSongSteps += slotSteps;
 
         const blockWidthPx = Math.max(90, pat.steps * 1.8 * slot.loops);
-
         const block = document.createElement('div');
         block.className = `touch-btn shrink-0 h-32 rounded-lg border-2 app-card app-border p-2 flex flex-col justify-between shadow relative overflow-hidden`;
         block.style.width = `${blockWidthPx}px`;
@@ -1592,21 +1431,9 @@
 
         block.innerHTML = `
           <div class="flex justify-between items-center border-b app-border pb-1">
-            <div class="flex items-center gap-1 overflow-hidden">
-              <span class="w-2 h-2 rounded-full" style="background-color: ${pat.color || '#f59e0b'}"></span>
-              <span class="font-black text-xs truncate" style="color: ${pat.color || '#f59e0b'}">${pat.name}</span>
-            </div>
+            <span class="font-black text-xs truncate" style="color: ${pat.color || '#f59e0b'}">${pat.name}</span>
             <button class="btn-toggle-timeline-mult text-[9px] font-mono app-btn px-1.5 py-0.5 rounded font-bold" data-idx="${idx}">x${slot.loops}</button>
           </div>
-
-          <div class="flex-1 my-1.5 flex flex-col justify-around opacity-80 pointer-events-none">
-            ${pat.tracks.slice(0, 5).map(t => `
-              <div class="h-1.5 w-full bg-zinc-800 rounded-sm overflow-hidden flex items-center">
-                <div class="h-full" style="width: ${Math.min(100, t.notes.length * 15)}%; background-color: ${pat.color || '#f59e0b'}"></div>
-              </div>
-            `).join('')}
-          </div>
-
           <div class="flex justify-between items-center text-[10px] font-mono text-zinc-300">
             <span>${slotSteps} STEPS</span>
             <div class="flex gap-1">
@@ -1653,17 +1480,16 @@
     document.getElementById('btnCreatePattern').onclick = () => {
       const steps = parseInt(document.getElementById('selNewPatSteps').value) || 64;
       const newId = project.patterns.length;
-      const colors = ["#f59e0b", "#38bdf8", "#22c55e", "#ec4899", "#a855f7", "#eab308"];
+      const colors = ["#f59e0b", "#38bdf8", "#22c55e", "#ec4899", "#a855f7"];
       const newColor = colors[newId % colors.length];
       const newName = `Pattern ${String.fromCharCode(65 + (newId % 26))}`;
 
       project.patterns.push(createNewPatternObject(newId, newName, steps, newColor));
       renderPatternsDeck();
       renderPatAddButtons();
-      showToast(`Creato ${newName} con durata ${steps} step`);
+      showToast(`Creato ${newName}`);
     };
 
-    // Navigazione Viste
     let activeView = 'mixer';
     function switchView(viewName) {
       activeView = viewName;
@@ -1709,10 +1535,9 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.remove('opacity-0');
-      setTimeout(() => t.classList.add('opacity-0'), 2200);
+      setTimeout(() => t.classList.add('opacity-0'), 2000);
     }
 
-    // Event Listeners Base
     document.getElementById('tabMixer').onclick = () => switchView('mixer');
     document.getElementById('tabEditor').onclick = () => switchView('editor');
     document.getElementById('tabChainer').onclick = () => switchView('chainer');
@@ -1737,16 +1562,9 @@
     document.getElementById('btnToggleAudio').onclick = () => {
       project.internalAudioEnabled = !project.internalAudioEnabled;
       const lbl = document.getElementById('lblAudioStatus');
-      if (project.internalAudioEnabled) {
-        lbl.textContent = 'ON';
-        lbl.className = 'text-emerald-400 font-bold';
-        getAudioContext();
-        showToast("Audio interno ATTIVATO");
-      } else {
-        lbl.textContent = 'OFF (MIDI ONLY)';
-        lbl.className = 'text-zinc-500 font-bold';
-        showToast("Audio interno DISATTIVATO (Solo MIDI Hardware)");
-      }
+      lbl.textContent = project.internalAudioEnabled ? 'ON' : 'OFF (MIDI ONLY)';
+      lbl.className = project.internalAudioEnabled ? 'text-emerald-400 font-bold' : 'text-zinc-500 font-bold';
+      if (project.internalAudioEnabled) getAudioContext();
     };
 
     document.getElementById('edTrackTypeSelect').onchange = (e) => {
@@ -1768,39 +1586,31 @@
     document.getElementById('btnCloseSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
     document.getElementById('btnSaveSettings').onclick = () => document.getElementById('modalSettings').classList.add('hidden');
     
-    document.getElementById('btnConnectMidiDirect').onclick = () => {
-      ensureMidiReady();
-    };
-
+    document.getElementById('btnConnectMidiDirect').onclick = () => ensureMidiReady();
     document.getElementById('btnRescanMidi').onclick = () => {
-      midiAccess = null; // Forza re-init
+      midiAccess = null;
       ensureMidiReady();
     };
 
-    // TEST INVIO NOTE NTS-1 SICURO
     document.getElementById('btnTestNts1').onclick = () => {
       ensureMidiReady(() => {
-        if (!midiAccess || midiAccess.outputs.size === 0) {
-          showToast("Nessuna porta MIDI USB rilevata. Riconnetti il cavo OTG");
+        const target = getTargetOutput();
+        if (!target) {
+          showToast("Nessuna porta MIDI USB rilevata");
           return;
         }
-
-        // Test mirato: invia 1 nota per canale a intervalli di 180ms
         for (let ch = 1; ch <= 16; ch++) {
           setTimeout(() => {
             sendMidiNoteOn(ch, 60, 115);
-            setTimeout(() => {
-              sendMidiNoteOff(ch, 60);
-            }, 120);
+            setTimeout(() => sendMidiNoteOff(ch, 60), 120);
           }, (ch - 1) * 180);
         }
-        showToast("Test invio in corso sui canali 1-16");
+        showToast(`Test invio su: ${target.name} (CH 1-16)`);
       });
     };
 
     document.querySelectorAll('.theme-select-btn').forEach(btn => {
       btn.onclick = () => {
-        document.documentElement.style = "";
         document.body.className = `flex flex-col h-screen w-screen overflow-hidden select-none theme-${btn.dataset.theme}`;
         showToast(`Tema attivo: ${btn.textContent}`);
         if (activeView === 'editor') drawPianoRoll();
